@@ -1,0 +1,97 @@
+import { useState } from 'react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+
+export default function Layout() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const closeMenu = () => setMenuOpen(false)
+
+  return (
+    <div className="site is-ready">
+      <div className="atmosphere" aria-hidden="true" />
+
+      <header className="nav">
+        <Link className="nav-brand" to="/" onClick={closeMenu}>
+          <img src="/logo-mark.png" alt="" width={36} height={36} />
+          <span>
+            <em>PA</em>VAULTSUPPLY
+          </span>
+        </Link>
+
+        <button
+          type="button"
+          className={`nav-toggle${menuOpen ? ' is-open' : ''}`}
+          aria-expanded={menuOpen}
+          aria-controls="site-nav"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span />
+          <span />
+        </button>
+
+        <nav
+          id="site-nav"
+          className={`nav-links${menuOpen ? ' is-open' : ''}`}
+        >
+          <NavLink
+            to="/"
+            end
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/colognes"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Colognes
+          </NavLink>
+          <NavLink
+            to="/clothes"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Clothes
+          </NavLink>
+          <NavLink
+            to="/bags"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Bags
+          </NavLink>
+          <NavLink
+            to="/slides"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Slides
+          </NavLink>
+          <NavLink
+            to="/airpods"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            AirPods
+          </NavLink>
+          <a href="#contact" onClick={closeMenu}>
+            Contact
+          </a>
+        </nav>
+      </header>
+
+      <Outlet />
+
+      <footer className="footer">
+        <img src="/logo-mark.png" alt="" width={48} height={48} />
+        <p>
+          <em>PA</em>VAULTSUPPLY
+        </p>
+        <p className="footer-note">Colognes, clothes & vault gear.</p>
+      </footer>
+    </div>
+  )
+}
