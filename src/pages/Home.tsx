@@ -11,8 +11,8 @@ const categories = [
   {
     to: '/clothes',
     label: 'Clothes',
-    copy: 'Tees, hoodies, cargos, and vault essentials.',
-    image: '/products/clothes-hoodie.png',
+    copy: 'Hoodies, pants, and essentials shorts & tees.',
+    image: '/products/stretch-limo-hoodie.png',
   },
   {
     to: '/bags',

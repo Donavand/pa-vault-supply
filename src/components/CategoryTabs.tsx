@@ -16,6 +16,7 @@ export default function CategoryTabs() {
           key={tab.to}
           to={tab.to}
           role="tab"
+          end={tab.to !== '/clothes'}
           className={({ isActive }) =>
             `category-tab${isActive ? ' is-active' : ''}`
           }

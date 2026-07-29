@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import NotifyRestock from '../components/NotifyRestock'
 import { paymentMethods } from '../data/payments'
 import {
-  getClothingBySlug,
   clothingImage,
+  clothingQuantity,
+  clothesLineForItem,
+  clothesLinePath,
+  firstAvailableSize,
+  getClothingBySlug,
   isClothingLowStock,
+  isClothingSoldOut,
+  sizeQuantity,
+  unitClothingPrice,
 } from '../data/clothes'
 
 export default function ClothingPage() {
@@ -17,24 +25,31 @@ export default function ClothingPage() {
     return <Navigate to="/clothes" replace />
   }
 
-  const sold = item.quantity === 'sold'
+  const sold = isClothingSoldOut(item)
+  const selectedSize = size ?? firstAvailableSize(item)
+  const selectedQty = selectedSize ? sizeQuantity(item, selectedSize) : null
+  const sizeLow =
+    typeof selectedQty === 'number' && selectedQty > 0 && selectedQty < 5
+  const totalQty = clothingQuantity(item)
   const low = isClothingLowStock(item)
-  const selectedSize = size ?? item.sizes[0]
+  const unitPrice = unitClothingPrice(item)
+  const line = clothesLineForItem(item)
+  const backPath = `${clothesLinePath(line)}#vault`
 
   return (
     <main className="product-page">
       <div className="product-page-inner">
-        <Link className="back-link" to="/clothes#vault">
-          ← Back to clothes
+        <Link className="back-link" to={backPath}>
+          ← Back to {line === 'all' ? 'clothes' : line}
         </Link>
 
         <div className="product-page-grid">
           <div className="product-page-shot">
             <img src={clothingImage(item)} alt={item.name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
-            {low && (
+            {!sold && low && typeof totalQty === 'number' && (
               <span className="low-badge low-badge--lg">
-                Only {item.quantity} left
+                Only {totalQty} left
               </span>
             )}
           </div>
@@ -44,87 +59,98 @@ export default function ClothingPage() {
             <h1>{item.name}</h1>
             <p className="product-page-meta">
               <span>#{item.id}</span>
-              <span className={low ? 'meta-low' : undefined}>
-                {sold
-                  ? 'Sold out'
-                  : low
-                    ? `Only ${item.quantity} left`
-                    : `${item.quantity} in vault`}
-              </span>
-              <span>${item.price}</span>
+              <span className="product-page-category">{item.category}</span>
+              <span>${unitPrice}</span>
             </p>
 
-            {low && (
+            {sizeLow && selectedSize && (
               <p className="urgency-banner">
-                Act fast — fewer than 5 left in the vault.
+                Act fast — only {selectedQty} left in size {selectedSize}.
               </p>
             )}
 
             <p className="product-page-desc">{item.description}</p>
 
             <div className="buy-row">
-              <aside className="cart-panel cart-panel--compact">
-                <h2>Add to cart</h2>
-                <div className="cart-item">
-                  <img src={clothingImage(item)} alt="" />
-                  <div>
-                    <p className="cart-item-name">{item.name}</p>
-                    <p className="cart-item-brand">{item.brand}</p>
-                    <p className="cart-item-price">${item.price}</p>
+              {sold ? (
+                <NotifyRestock
+                  kind="clothes"
+                  slug={item.slug}
+                  name={item.name}
+                  brand={item.brand}
+                  path={`/clothes/${item.slug}`}
+                  image={clothingImage(item)}
+                />
+              ) : (
+                <aside className="cart-panel cart-panel--compact">
+                  <h2>Add to cart</h2>
+                  <div className="cart-item">
+                    <img src={clothingImage(item)} alt="" />
+                    <div>
+                      <p className="cart-item-name">{item.name}</p>
+                      <p className="cart-item-brand">{item.brand}</p>
+                      <p className="cart-item-price">${unitPrice}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="size-picker">
-                  <p className="size-picker-label">Size</p>
-                  <div className="size-options">
-                    {item.sizes.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        className={`size-option${selectedSize === s ? ' is-active' : ''}`}
-                        onClick={() => {
-                          setSize(s)
-                          setInCart(false)
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                  <div className="size-picker">
+                    <p className="size-picker-label">Size</p>
+                    <div className="size-options">
+                      {item.sizes.map((entry) => {
+                        const sizeSold = entry.quantity === 'sold'
+                        const active = selectedSize === entry.size
+                        return (
+                          <button
+                            key={entry.size}
+                            type="button"
+                            className={`size-option${active ? ' is-active' : ''}${sizeSold ? ' is-sold' : ''}`}
+                            disabled={sizeSold}
+                            onClick={() => {
+                              setSize(entry.size)
+                              setInCart(false)
+                            }}
+                          >
+                            {entry.size}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  type="button"
-                  className={`cart-add${inCart ? ' cart-add--done' : ''}`}
-                  onClick={() => setInCart(true)}
-                >
-                  {inCart ? 'Added to cart' : 'Add to cart'}
-                </button>
+                  <button
+                    type="button"
+                    className={`cart-add${inCart ? ' cart-add--done' : ''}`}
+                    disabled={!selectedSize}
+                    onClick={() => setInCart(true)}
+                  >
+                    {inCart ? 'Added to cart' : 'Add to cart'}
+                  </button>
 
-                <div className={`cart-checkout${inCart ? ' is-open' : ''}`}>
-                  <h3>Checkout</h3>
-                  <p>
-                    Size {selectedSize} · pay with any method below.
-                  </p>
-                  <ul className="pay-methods">
-                    {paymentMethods.map((method) => (
-                      <li key={method.id}>
-                        <a
-                          className={`pay-btn pay-btn--${method.id}`}
-                          href={method.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <span>{method.label}</span>
-                          <span className="pay-btn-note">
-                            {method.note} · ${item.price}
-                          </span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </aside>
+                  <div className={`cart-checkout${inCart ? ' is-open' : ''}`}>
+                    <h3>Checkout</h3>
+                    <p>
+                      Size {selectedSize} · pay with any method below.
+                    </p>
+                    <ul className="pay-methods">
+                      {paymentMethods.map((method) => (
+                        <li key={method.id}>
+                          <a
+                            className={`pay-btn pay-btn--${method.id}`}
+                            href={method.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <span>{method.label}</span>
+                            <span className="pay-btn-note">
+                              {method.note} · ${unitPrice}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </aside>
+              )}
             </div>
           </div>
         </div>

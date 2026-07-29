@@ -65,7 +65,7 @@ export default function GearShop({ category }: Props) {
                     <span className="product-name">{item.name}</span>
                     {low && (
                       <span className="product-urgency">
-                        Act fast — almost gone
+                        Act fast — only {item.quantity} left
                       </span>
                     )}
                     <span className="product-price">${item.price}</span>
@@ -80,7 +80,7 @@ export default function GearShop({ category }: Props) {
           <div className="sold-block">
             <div className="section-head sold-head">
               <h2>Sold out</h2>
-              <p>Cleared pieces — open a page to request the next drop.</p>
+              <p>Cleared pieces — open a page to get notified when it’s back.</p>
             </div>
             <ul className="product-grid">
               {soldOut.map((item, i) => (

@@ -1,9 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import CategoryTabs from '../components/CategoryTabs'
+import ClothesLineTabs, {
+  parseClothesLine,
+} from '../components/ClothesLineTabs'
 import {
-  clothes,
   clothingImage,
+  clothingQuantity,
+  clothesForLine,
   isClothingLowStock,
+  isClothingSoldOut,
+  startingClothingPrice,
 } from '../data/clothes'
 
 const socials = [
@@ -12,9 +18,32 @@ const socials = [
   { label: 'Discord', href: '#contact' },
 ]
 
+const lineCopy: Record<string, { title: string; blurb: string }> = {
+  all: {
+    title: 'Clothes',
+    blurb: 'Hoodies, pants, essentials shorts, and tees.',
+  },
+  hoodies: {
+    title: 'Hoodies',
+    blurb: 'Stretch limo and oatmeal hoodies from the vault.',
+  },
+  pants: {
+    title: 'Pants',
+    blurb: 'Uncuffed oat and stretch limo pants.',
+  },
+  essentials: {
+    title: 'Essentials',
+    blurb: 'Essentials shorts and tees — core vault staples.',
+  },
+}
+
 export default function Clothes() {
-  const inStock = clothes.filter((c) => c.quantity !== 'sold')
-  const soldOut = clothes.filter((c) => c.quantity === 'sold')
+  const [params] = useSearchParams()
+  const line = parseClothesLine(params.get('line'))
+  const filtered = clothesForLine(line)
+  const inStock = filtered.filter((c) => !isClothingSoldOut(c))
+  const soldOut = filtered.filter((c) => isClothingSoldOut(c))
+  const copy = lineCopy[line]
 
   return (
     <main id="top">
@@ -23,55 +52,64 @@ export default function Clothes() {
           <Link className="back-link" to="/#shop">
             ← Home
           </Link>
-          <h1>Clothes</h1>
-          <p>Tees, hoodies, cargos, and vault essentials.</p>
+          <h1>{copy.title}</h1>
+          <p>{copy.blurb}</p>
         </div>
       </section>
 
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
+        <ClothesLineTabs />
 
-        <ul className="product-grid">
-          {inStock.map((item, i) => {
-            const low = isClothingLowStock(item)
-            return (
-              <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                <Link
-                  className={`product${low ? ' product--low' : ''}`}
-                  to={`/clothes/${item.slug}`}
-                >
-                  <span className="product-shot">
-                    <img src={clothingImage(item)} alt="" loading="lazy" />
-                    {low && (
-                      <span className="low-badge">
-                        Only {item.quantity} left
-                      </span>
-                    )}
-                  </span>
-                  <span className="product-body">
-                    <span className="product-meta">
-                      <span className="product-id">#{item.id}</span>
+        {inStock.length === 0 && soldOut.length === 0 ? (
+          <p className="empty-line">No pieces in this line yet.</p>
+        ) : (
+          <ul className="product-grid">
+            {inStock.map((item, i) => {
+              const low = isClothingLowStock(item)
+              const qty = clothingQuantity(item)
+              return (
+                <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
+                  <Link
+                    className={`product${low ? ' product--low' : ''}`}
+                    to={`/clothes/${item.slug}`}
+                  >
+                    <span className="product-shot">
+                      <img src={clothingImage(item)} alt="" loading="lazy" />
+                      {low && typeof qty === 'number' && (
+                        <span className="low-badge">Only {qty} left</span>
+                      )}
                     </span>
-                    <span className="product-brand">{item.brand}</span>
-                    <span className="product-name">{item.name}</span>
-                    {low && (
-                      <span className="product-urgency">
-                        Act fast — almost gone
+                    <span className="product-body">
+                      <span className="product-meta">
+                        <span className="product-id">#{item.id}</span>
+                        <span className="product-category-tag">
+                          {item.category}
+                        </span>
                       </span>
-                    )}
-                    <span className="product-price">${item.price}</span>
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+                      <span className="product-brand">{item.brand}</span>
+                      <span className="product-name">{item.name}</span>
+                      {low && typeof qty === 'number' && (
+                        <span className="product-urgency">
+                          Act fast — only {qty} left
+                        </span>
+                      )}
+                      <span className="product-price">
+                        {startingClothingPrice(item)}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        )}
 
         {soldOut.length > 0 && (
           <div className="sold-block">
             <div className="section-head sold-head">
               <h2>Sold out</h2>
-              <p>Cleared pieces — open a page to request the next drop.</p>
+              <p>Cleared pieces — open a page to get notified when it’s back.</p>
             </div>
             <ul className="product-grid">
               {soldOut.map((item, i) => (
@@ -87,10 +125,15 @@ export default function Clothes() {
                     <span className="product-body">
                       <span className="product-meta">
                         <span className="product-id">#{item.id}</span>
+                        <span className="product-category-tag">
+                          {item.category}
+                        </span>
                       </span>
                       <span className="product-brand">{item.brand}</span>
                       <span className="product-name">{item.name}</span>
-                      <span className="product-price">${item.price}</span>
+                      <span className="product-price">
+                        {startingClothingPrice(item)}
+                      </span>
                     </span>
                   </Link>
                 </li>

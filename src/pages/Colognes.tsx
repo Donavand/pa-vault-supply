@@ -58,7 +58,7 @@ export default function Colognes() {
                     <span className="product-name">{product.name}</span>
                     {low && (
                       <span className="product-urgency">
-                        Act fast — almost gone
+                        Act fast — only {product.quantity} left
                       </span>
                     )}
                     <span className="product-price">
@@ -76,8 +76,8 @@ export default function Colognes() {
             <div className="section-head sold-head">
               <h2>Sold out</h2>
               <p>
-                Same lineup — currently cleared. Open a page to request or
-                pre-order.
+                Same lineup — currently cleared. Open a page to get notified
+                when it’s back.
               </p>
             </div>
             <ul className="product-grid">

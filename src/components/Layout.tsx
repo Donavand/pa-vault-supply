@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import RestockAlerts from './RestockAlerts'
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -9,6 +10,7 @@ export default function Layout() {
   return (
     <div className="site is-ready">
       <div className="atmosphere" aria-hidden="true" />
+      <RestockAlerts />
 
       <header className="nav">
         <Link className="nav-brand" to="/" onClick={closeMenu}>
