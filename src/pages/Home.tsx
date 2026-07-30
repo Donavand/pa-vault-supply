@@ -9,16 +9,16 @@ const categories = [
     image: '/products/baccarat.png',
   },
   {
-    to: '/clothes',
-    label: 'Clothes',
-    copy: 'Hoodies, pants, and essentials shorts & tees.',
+    to: '/men/clothes',
+    label: 'Men',
+    copy: 'Men’s clothes and bags from the vault.',
     image: '/products/stretch-limo-hoodie.png',
   },
   {
-    to: '/bags',
-    label: 'Bags',
-    copy: 'Duffels, slings, and packs ready to move.',
-    image: '/products/bag-duffel.png',
+    to: '/women/clothes',
+    label: 'Women',
+    copy: 'Women’s clothes and bags from the vault.',
+    image: '/products/women-cropped-hoodie.png',
   },
   {
     to: '/slides',

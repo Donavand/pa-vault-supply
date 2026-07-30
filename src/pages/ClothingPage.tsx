@@ -22,7 +22,7 @@ export default function ClothingPage() {
   const [size, setSize] = useState<string | null>(null)
 
   if (!item) {
-    return <Navigate to="/clothes" replace />
+    return <Navigate to="/men/clothes" replace />
   }
 
   const sold = isClothingSoldOut(item)
@@ -78,7 +78,7 @@ export default function ClothingPage() {
                   slug={item.slug}
                   name={item.name}
                   brand={item.brand}
-                  path={`/clothes/${item.slug}`}
+                  path={`/men/clothes/${item.slug}`}
                   image={clothingImage(item)}
                 />
               ) : (

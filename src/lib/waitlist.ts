@@ -1,10 +1,20 @@
 import { clothingQuantity, getClothingBySlug } from '../data/clothes'
 import { getGearBySlug, type GearCategory } from '../data/gear'
 import { getProductBySlug } from '../data/products'
+import {
+  getWomenBySlug,
+  womenQuantity,
+  type WomenSection,
+} from '../data/women'
 
 const STORAGE_KEY = 'pa-vault-restock-waitlist'
 
-export type WaitlistKind = 'cologne' | 'clothes' | GearCategory
+export type WaitlistKind =
+  | 'cologne'
+  | 'clothes'
+  | 'women-clothes'
+  | 'women-bags'
+  | GearCategory
 
 export type WaitlistEntry = {
   id: string
@@ -91,6 +101,12 @@ function stockFor(entry: WaitlistEntry): number | 'sold' | null {
   if (entry.kind === 'clothes') {
     const item = getClothingBySlug(entry.slug)
     return item ? clothingQuantity(item) : null
+  }
+  if (entry.kind === 'women-clothes' || entry.kind === 'women-bags') {
+    const section: WomenSection =
+      entry.kind === 'women-clothes' ? 'clothes' : 'bags'
+    const item = getWomenBySlug(section, entry.slug)
+    return item ? womenQuantity(item) : null
   }
   return getGearBySlug(entry.kind, entry.slug)?.quantity ?? null
 }

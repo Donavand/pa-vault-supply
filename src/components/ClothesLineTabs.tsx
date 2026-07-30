@@ -3,13 +3,13 @@ import { NavLink, useSearchParams } from 'react-router-dom'
 export type ClothesLine = 'all' | 'hoodies' | 'pants' | 'essentials'
 
 export const clothesLines = [
-  { id: 'all' as const, label: 'All', to: '/clothes' },
-  { id: 'hoodies' as const, label: 'Hoodies', to: '/clothes?line=hoodies' },
-  { id: 'pants' as const, label: 'Pants', to: '/clothes?line=pants' },
+  { id: 'all' as const, label: 'All', to: '/men/clothes' },
+  { id: 'hoodies' as const, label: 'Hoodies', to: '/men/clothes?line=hoodies' },
+  { id: 'pants' as const, label: 'Pants', to: '/men/clothes?line=pants' },
   {
     id: 'essentials' as const,
     label: 'Essentials',
-    to: '/clothes?line=essentials',
+    to: '/men/clothes?line=essentials',
   },
 ]
 

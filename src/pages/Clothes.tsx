@@ -3,6 +3,7 @@ import CategoryTabs from '../components/CategoryTabs'
 import ClothesLineTabs, {
   parseClothesLine,
 } from '../components/ClothesLineTabs'
+import MenLineTabs from '../components/MenLineTabs'
 import {
   clothingImage,
   clothingQuantity,
@@ -20,19 +21,19 @@ const socials = [
 
 const lineCopy: Record<string, { title: string; blurb: string }> = {
   all: {
-    title: 'Clothes',
+    title: 'Men · Clothes',
     blurb: 'Hoodies, pants, essentials shorts, and tees.',
   },
   hoodies: {
-    title: 'Hoodies',
+    title: 'Men · Hoodies',
     blurb: 'Stretch limo and oatmeal hoodies from the vault.',
   },
   pants: {
-    title: 'Pants',
+    title: 'Men · Pants',
     blurb: 'Uncuffed oat and stretch limo pants.',
   },
   essentials: {
-    title: 'Essentials',
+    title: 'Men · Essentials',
     blurb: 'Essentials shorts and tees — core vault staples.',
   },
 }
@@ -59,6 +60,7 @@ export default function Clothes() {
 
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
+        <MenLineTabs />
         <ClothesLineTabs />
 
         {inStock.length === 0 && soldOut.length === 0 ? (
@@ -72,7 +74,7 @@ export default function Clothes() {
                 <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
                   <Link
                     className={`product${low ? ' product--low' : ''}`}
-                    to={`/clothes/${item.slug}`}
+                    to={`/men/clothes/${item.slug}`}
                   >
                     <span className="product-shot">
                       <img src={clothingImage(item)} alt="" loading="lazy" />
@@ -116,7 +118,7 @@ export default function Clothes() {
                 <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
                   <Link
                     className="product product--sold"
-                    to={`/clothes/${item.slug}`}
+                    to={`/men/clothes/${item.slug}`}
                   >
                     <span className="product-shot">
                       <img src={clothingImage(item)} alt="" loading="lazy" />

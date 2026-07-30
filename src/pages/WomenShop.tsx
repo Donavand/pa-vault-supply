@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
 import CategoryTabs from '../components/CategoryTabs'
-import MenLineTabs from '../components/MenLineTabs'
+import WomenLineTabs from '../components/WomenLineTabs'
 import {
-  type GearCategory,
-  gearByCategory,
-  gearImage,
-  gearMeta,
-  isGearLowStock,
-} from '../data/gear'
+  type WomenSection,
+  isWomenLowStock,
+  isWomenSoldOut,
+  womenBySection,
+  womenImage,
+  womenQuantity,
+  womenSectionMeta,
+} from '../data/women'
 
 const socials = [
   { label: 'Instagram', href: '#contact' },
@@ -16,23 +18,15 @@ const socials = [
 ]
 
 type Props = {
-  category: GearCategory
-  basePath?: string
-  title?: string
-  showMenTabs?: boolean
+  section: WomenSection
 }
 
-export default function GearShop({
-  category,
-  basePath,
-  title,
-  showMenTabs = false,
-}: Props) {
-  const meta = gearMeta[category]
-  const items = gearByCategory(category)
-  const inStock = items.filter((c) => c.quantity !== 'sold')
-  const soldOut = items.filter((c) => c.quantity === 'sold')
-  const path = basePath ?? `/${category}`
+export default function WomenShop({ section }: Props) {
+  const meta = womenSectionMeta[section]
+  const items = womenBySection(section)
+  const inStock = items.filter((item) => !isWomenSoldOut(item))
+  const soldOut = items.filter((item) => isWomenSoldOut(item))
+  const base = `/women/${section}`
 
   return (
     <main id="top">
@@ -41,30 +35,29 @@ export default function GearShop({
           <Link className="back-link" to="/#shop">
             ← Home
           </Link>
-          <h1>{title ?? meta.title}</h1>
+          <h1>{meta.title}</h1>
           <p>{meta.lede}</p>
         </div>
       </section>
 
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
-        {showMenTabs && <MenLineTabs />}
+        <WomenLineTabs />
 
         <ul className="product-grid">
           {inStock.map((item, i) => {
-            const low = isGearLowStock(item)
+            const low = isWomenLowStock(item)
+            const qty = womenQuantity(item)
             return (
               <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
                 <Link
                   className={`product${low ? ' product--low' : ''}`}
-                  to={`${path}/${item.slug}`}
+                  to={`${base}/${item.slug}`}
                 >
                   <span className="product-shot">
-                    <img src={gearImage(item)} alt="" loading="lazy" />
-                    {low && (
-                      <span className="low-badge">
-                        Only {item.quantity} left
-                      </span>
+                    <img src={womenImage(item)} alt="" loading="lazy" />
+                    {low && typeof qty === 'number' && (
+                      <span className="low-badge">Only {qty} left</span>
                     )}
                   </span>
                   <span className="product-body">
@@ -73,9 +66,9 @@ export default function GearShop({
                     </span>
                     <span className="product-brand">{item.brand}</span>
                     <span className="product-name">{item.name}</span>
-                    {low && (
+                    {low && typeof qty === 'number' && (
                       <span className="product-urgency">
-                        Act fast — only {item.quantity} left
+                        Act fast — only {qty} left
                       </span>
                     )}
                     <span className="product-price">${item.price}</span>
@@ -97,10 +90,10 @@ export default function GearShop({
                 <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
                   <Link
                     className="product product--sold"
-                    to={`${path}/${item.slug}`}
+                    to={`${base}/${item.slug}`}
                   >
                     <span className="product-shot">
-                      <img src={gearImage(item)} alt="" loading="lazy" />
+                      <img src={womenImage(item)} alt="" loading="lazy" />
                       <span className="sold-badge">Sold out</span>
                     </span>
                     <span className="product-body">
@@ -121,7 +114,7 @@ export default function GearShop({
 
       <section className="contact" id="contact">
         <div className="section-head">
-          <h2>Claim yours</h2>
+          <h2>Claim a piece</h2>
           <p>Reach the vault on Instagram, Telegram, or Discord.</p>
         </div>
         <ul className="contact-links">

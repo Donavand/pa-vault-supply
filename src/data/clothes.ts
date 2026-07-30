@@ -440,5 +440,5 @@ export function clothesLineForItem(item: ClothingItem): ClothesLine {
 }
 
 export function clothesLinePath(line: ClothesLine): string {
-  return line === 'all' ? '/clothes' : `/clothes?line=${line}`
+  return line === 'all' ? '/men/clothes' : `/men/clothes?line=${line}`
 }

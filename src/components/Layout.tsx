@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import RestockAlerts from './RestockAlerts'
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { pathname } = useLocation()
 
   const closeMenu = () => setMenuOpen(false)
+  const menActive = pathname.startsWith('/men')
+  const womenActive = pathname.startsWith('/women')
 
   return (
     <div className="site is-ready">
@@ -52,18 +55,18 @@ export default function Layout() {
             Colognes
           </NavLink>
           <NavLink
-            to="/clothes"
+            to="/men/clothes"
             onClick={closeMenu}
-            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            className={menActive ? 'is-active' : undefined}
           >
-            Clothes
+            Men
           </NavLink>
           <NavLink
-            to="/bags"
+            to="/women/clothes"
             onClick={closeMenu}
-            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            className={womenActive ? 'is-active' : undefined}
           >
-            Bags
+            Women
           </NavLink>
           <NavLink
             to="/slides"

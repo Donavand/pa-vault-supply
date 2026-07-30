@@ -3,47 +3,60 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import NotifyRestock from '../components/NotifyRestock'
 import { paymentMethods } from '../data/payments'
 import {
-  type GearCategory,
-  getGearBySlug,
-  gearImage,
-  isGearLowStock,
-} from '../data/gear'
+  type WomenSection,
+  firstAvailableWomenSize,
+  getWomenBySlug,
+  isWomenLowStock,
+  isWomenSoldOut,
+  womenImage,
+  womenQuantity,
+  womenSizeQuantity,
+} from '../data/women'
 
 type Props = {
-  category: GearCategory
-  basePath?: string
+  section: WomenSection
 }
 
-export default function GearProductPage({ category, basePath }: Props) {
+export default function WomenProductPage({ section }: Props) {
   const { slug } = useParams<{ slug: string }>()
-  const item = slug ? getGearBySlug(category, slug) : undefined
+  const item = slug ? getWomenBySlug(section, slug) : undefined
   const [inCart, setInCart] = useState(false)
-  const [option, setOption] = useState<string | null>(null)
+  const [choice, setChoice] = useState<string | null>(null)
 
   if (!item) {
-    return <Navigate to={basePath ?? `/${category}`} replace />
+    return <Navigate to={`/women/${section}`} replace />
   }
 
-  const sold = item.quantity === 'sold'
-  const low = isGearLowStock(item)
+  const sold = isWomenSoldOut(item)
+  const hasSizes = Boolean(item.sizes?.length)
   const options = item.options ?? []
-  const selected = option ?? options[0] ?? null
-  const path = basePath ?? `/${category}`
+  const selected = hasSizes
+    ? (choice ?? firstAvailableWomenSize(item))
+    : (choice ?? options[0] ?? null)
+  const selectedQty = hasSizes && selected
+    ? womenSizeQuantity(item, selected)
+    : null
+  const sizeLow =
+    typeof selectedQty === 'number' && selectedQty > 0 && selectedQty < 5
+  const totalQty = womenQuantity(item)
+  const low = isWomenLowStock(item)
+  const backPath = `/women/${section}#vault`
+  const waitlistKind = section === 'clothes' ? 'women-clothes' : 'women-bags'
 
   return (
     <main className="product-page">
       <div className="product-page-inner">
-        <Link className="back-link" to={`${path}#vault`}>
-          ← Back to {category}
+        <Link className="back-link" to={backPath}>
+          ← Back to women {section}
         </Link>
 
         <div className="product-page-grid">
           <div className="product-page-shot">
-            <img src={gearImage(item)} alt={item.name} />
+            <img src={womenImage(item)} alt={item.name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
-            {low && (
+            {!sold && low && typeof totalQty === 'number' && (
               <span className="low-badge low-badge--lg">
-                Only {item.quantity} left
+                Only {totalQty} left
               </span>
             )}
           </div>
@@ -53,19 +66,13 @@ export default function GearProductPage({ category, basePath }: Props) {
             <h1>{item.name}</h1>
             <p className="product-page-meta">
               <span>#{item.id}</span>
-              <span className={low ? 'meta-low' : undefined}>
-                {sold
-                  ? 'Sold out'
-                  : low
-                    ? `Only ${item.quantity} left`
-                    : `${item.quantity} in vault`}
-              </span>
+              <span className="product-page-category">{section}</span>
               <span>${item.price}</span>
             </p>
 
-            {low && (
+            {sizeLow && selected && (
               <p className="urgency-banner">
-                Act fast — only {item.quantity} left in the vault.
+                Act fast — only {selectedQty} left in size {selected}.
               </p>
             )}
 
@@ -74,18 +81,18 @@ export default function GearProductPage({ category, basePath }: Props) {
             <div className="buy-row">
               {sold ? (
                 <NotifyRestock
-                  kind={category}
+                  kind={waitlistKind}
                   slug={item.slug}
                   name={item.name}
                   brand={item.brand}
-                  path={`${path}/${item.slug}`}
-                  image={gearImage(item)}
+                  path={`/women/${section}/${item.slug}`}
+                  image={womenImage(item)}
                 />
               ) : (
                 <aside className="cart-panel cart-panel--compact">
                   <h2>Add to cart</h2>
                   <div className="cart-item">
-                    <img src={gearImage(item)} alt="" />
+                    <img src={womenImage(item)} alt="" />
                     <div>
                       <p className="cart-item-name">{item.name}</p>
                       <p className="cart-item-brand">{item.brand}</p>
@@ -93,23 +100,49 @@ export default function GearProductPage({ category, basePath }: Props) {
                     </div>
                   </div>
 
-                  {options.length > 0 && (
+                  {hasSizes && item.sizes && (
+                    <div className="size-picker">
+                      <p className="size-picker-label">Size</p>
+                      <div className="size-options">
+                        {item.sizes.map((entry) => {
+                          const sizeSold = entry.quantity === 'sold'
+                          const active = selected === entry.size
+                          return (
+                            <button
+                              key={entry.size}
+                              type="button"
+                              className={`size-option${active ? ' is-active' : ''}${sizeSold ? ' is-sold' : ''}`}
+                              disabled={sizeSold}
+                              onClick={() => {
+                                setChoice(entry.size)
+                                setInCart(false)
+                              }}
+                            >
+                              {entry.size}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {!hasSizes && options.length > 0 && (
                     <div className="size-picker">
                       <p className="size-picker-label">
                         {item.optionLabel ?? 'Option'}
                       </p>
                       <div className="size-options">
-                        {options.map((s) => (
+                        {options.map((opt) => (
                           <button
-                            key={s}
+                            key={opt}
                             type="button"
-                            className={`size-option${selected === s ? ' is-active' : ''}`}
+                            className={`size-option${selected === opt ? ' is-active' : ''}`}
                             onClick={() => {
-                              setOption(s)
+                              setChoice(opt)
                               setInCart(false)
                             }}
                           >
-                            {s}
+                            {opt}
                           </button>
                         ))}
                       </div>
@@ -119,6 +152,7 @@ export default function GearProductPage({ category, basePath }: Props) {
                   <button
                     type="button"
                     className={`cart-add${inCart ? ' cart-add--done' : ''}`}
+                    disabled={hasSizes && !selected}
                     onClick={() => setInCart(true)}
                   >
                     {inCart ? 'Added to cart' : 'Add to cart'}
@@ -128,7 +162,7 @@ export default function GearProductPage({ category, basePath }: Props) {
                     <h3>Checkout</h3>
                     <p>
                       {selected
-                        ? `${item.optionLabel ?? 'Option'} ${selected} · `
+                        ? `${hasSizes ? 'Size' : (item.optionLabel ?? 'Option')} ${selected} · `
                         : ''}
                       pay with any method below.
                     </p>
