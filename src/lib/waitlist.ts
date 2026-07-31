@@ -1,10 +1,9 @@
 import { clothingQuantity, getClothingBySlug } from '../data/clothes'
-import { getGearBySlug, type GearCategory } from '../data/gear'
+import { getGearBySlug, gearQuantity, type GearCategory } from '../data/gear'
 import { getProductBySlug } from '../data/products'
 import {
   getWomenBySlug,
   womenQuantity,
-  type WomenSection,
 } from '../data/women'
 
 const STORAGE_KEY = 'pa-vault-restock-waitlist'
@@ -13,7 +12,7 @@ export type WaitlistKind =
   | 'cologne'
   | 'clothes'
   | 'women-clothes'
-  | 'women-bags'
+  | 'women-accessories'
   | GearCategory
 
 export type WaitlistEntry = {
@@ -102,13 +101,21 @@ function stockFor(entry: WaitlistEntry): number | 'sold' | null {
     const item = getClothingBySlug(entry.slug)
     return item ? clothingQuantity(item) : null
   }
-  if (entry.kind === 'women-clothes' || entry.kind === 'women-bags') {
-    const section: WomenSection =
-      entry.kind === 'women-clothes' ? 'clothes' : 'bags'
-    const item = getWomenBySlug(section, entry.slug)
+  if (entry.kind === 'women-clothes') {
+    const item = getWomenBySlug('clothes', entry.slug)
     return item ? womenQuantity(item) : null
   }
-  return getGearBySlug(entry.kind, entry.slug)?.quantity ?? null
+  if (entry.kind === 'women-accessories') {
+    const item = getWomenBySlug('accessories', entry.slug)
+    return item ? womenQuantity(item) : null
+  }
+  // Legacy waitlist key from when jerseys lived under Women
+  if ((entry.kind as string) === 'women-jerseys') {
+    const item = getGearBySlug('jerseys', entry.slug)
+    return item ? gearQuantity(item) : null
+  }
+  const item = getGearBySlug(entry.kind, entry.slug)
+  return item ? gearQuantity(item) : null
 }
 
 export function getRestockedWaitlistItems(): RestockedItem[] {

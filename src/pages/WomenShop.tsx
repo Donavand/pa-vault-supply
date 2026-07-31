@@ -1,15 +1,18 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import CategoryTabs from '../components/CategoryTabs'
+import WomenBrandTabs from '../components/WomenBrandTabs'
 import WomenLineTabs from '../components/WomenLineTabs'
 import {
+  type WomenItem,
   type WomenSection,
-  isWomenLowStock,
-  isWomenSoldOut,
-  womenBySection,
+  parseWomenBrand,
+  womenForBrand,
+  womenGroupedByBrand,
   womenImage,
   womenQuantity,
   womenSectionMeta,
 } from '../data/women'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 const socials = [
   { label: 'Instagram', href: '#contact' },
@@ -21,12 +24,83 @@ type Props = {
   section: WomenSection
 }
 
+function ProductCard({
+  item,
+  base,
+  index,
+}: {
+  item: WomenItem
+  base: string
+  index: number
+}) {
+  const urgency = stockUrgency(womenQuantity(item))
+  const label = stockUrgencyLabel(urgency)
+  const sold = urgency === 'sold'
+  const low = urgency === 'low' || urgency === 'act-fast'
+
+  return (
+    <li style={{ animationDelay: `${0.04 * index}s` }}>
+      <Link
+        className={`product${sold ? ' product--sold' : ''}${low ? ' product--low' : ''}`}
+        to={`${base}/${item.slug}`}
+      >
+        <span className="product-shot">
+          <img src={womenImage(item)} alt="" loading="lazy" />
+          {low && label && (
+            <span
+              className={`low-badge${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+            >
+              {label}
+            </span>
+          )}
+        </span>
+        <span className="product-body">
+          {label && (
+            <span className="product-meta">
+              <span
+                className={`product-qty${
+                  sold
+                    ? ' product-qty--sold'
+                    : urgency === 'act-fast'
+                      ? ' product-qty--act'
+                      : ' product-qty--low'
+                }`}
+              >
+                {label}
+              </span>
+            </span>
+          )}
+          <span className="product-brand">{item.brand}</span>
+          <span className="product-name">{item.name}</span>
+          {urgency === 'act-fast' && (
+            <span className="product-urgency product-urgency--act">
+              Act fast
+            </span>
+          )}
+          <span className="product-price">${item.price}</span>
+        </span>
+      </Link>
+    </li>
+  )
+}
+
 export default function WomenShop({ section }: Props) {
+  const [params] = useSearchParams()
+  const brand = parseWomenBrand(section, params.get('brand'))
   const meta = womenSectionMeta[section]
-  const items = womenBySection(section)
-  const inStock = items.filter((item) => !isWomenSoldOut(item))
-  const soldOut = items.filter((item) => isWomenSoldOut(item))
+  const items = womenForBrand(section, brand)
+  const groups = brand === 'all' ? womenGroupedByBrand(items) : null
   const base = `/women/${section}`
+  const title =
+    brand === 'all'
+      ? meta.title
+      : brand === 'alo'
+        ? 'Women · Alo'
+        : brand === 'lulu'
+          ? 'Women · Lulu'
+          : brand === 'coach'
+            ? 'Women · Coach'
+            : meta.title
 
   return (
     <main id="top">
@@ -35,7 +109,7 @@ export default function WomenShop({ section }: Props) {
           <Link className="back-link" to="/#shop">
             ← Home
           </Link>
-          <h1>{meta.title}</h1>
+          <h1>{title}</h1>
           <p>{meta.lede}</p>
         </div>
       </section>
@@ -43,72 +117,32 @@ export default function WomenShop({ section }: Props) {
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
         <WomenLineTabs />
+        <WomenBrandTabs section={section} />
 
-        <ul className="product-grid">
-          {inStock.map((item, i) => {
-            const low = isWomenLowStock(item)
-            const qty = womenQuantity(item)
-            return (
-              <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                <Link
-                  className={`product${low ? ' product--low' : ''}`}
-                  to={`${base}/${item.slug}`}
-                >
-                  <span className="product-shot">
-                    <img src={womenImage(item)} alt="" loading="lazy" />
-                    {low && typeof qty === 'number' && (
-                      <span className="low-badge">Only {qty} left</span>
-                    )}
-                  </span>
-                  <span className="product-body">
-                    <span className="product-meta">
-                      <span className="product-id">#{item.id}</span>
-                    </span>
-                    <span className="product-brand">{item.brand}</span>
-                    <span className="product-name">{item.name}</span>
-                    {low && typeof qty === 'number' && (
-                      <span className="product-urgency">
-                        Act fast — only {qty} left
-                      </span>
-                    )}
-                    <span className="product-price">${item.price}</span>
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-
-        {soldOut.length > 0 && (
-          <div className="sold-block">
-            <div className="section-head sold-head">
-              <h2>Sold out</h2>
-              <p>Cleared pieces — open a page to get notified when it’s back.</p>
+        {items.length === 0 ? (
+          <p className="vault-empty">Nothing in this drop yet — check back soon.</p>
+        ) : groups ? (
+          groups.map((group) => (
+            <div key={group.brand} className="brand-group">
+              <h2 className="brand-group-title">{group.brand}</h2>
+              <ul className="product-grid">
+                {group.items.map((item, i) => (
+                  <ProductCard
+                    key={item.id}
+                    item={item}
+                    base={base}
+                    index={i}
+                  />
+                ))}
+              </ul>
             </div>
-            <ul className="product-grid">
-              {soldOut.map((item, i) => (
-                <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                  <Link
-                    className="product product--sold"
-                    to={`${base}/${item.slug}`}
-                  >
-                    <span className="product-shot">
-                      <img src={womenImage(item)} alt="" loading="lazy" />
-                      <span className="sold-badge">Sold out</span>
-                    </span>
-                    <span className="product-body">
-                      <span className="product-meta">
-                        <span className="product-id">#{item.id}</span>
-                      </span>
-                      <span className="product-brand">{item.brand}</span>
-                      <span className="product-name">{item.name}</span>
-                      <span className="product-price">${item.price}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          ))
+        ) : (
+          <ul className="product-grid">
+            {items.map((item, i) => (
+              <ProductCard key={item.id} item={item} base={base} index={i} />
+            ))}
+          </ul>
         )}
       </section>
 

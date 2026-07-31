@@ -1,21 +1,37 @@
 import { NavLink, useSearchParams } from 'react-router-dom'
+import { type ClothesLine } from '../data/clothes'
 
-export type ClothesLine = 'all' | 'hoodies' | 'pants' | 'essentials'
+export type { ClothesLine }
 
-export const clothesLines = [
-  { id: 'all' as const, label: 'All', to: '/men/clothes' },
-  { id: 'hoodies' as const, label: 'Hoodies', to: '/men/clothes?line=hoodies' },
-  { id: 'pants' as const, label: 'Pants', to: '/men/clothes?line=pants' },
+export const clothesLines: { id: ClothesLine; label: string; to: string }[] = [
+  { id: 'all', label: 'All', to: '/men/clothes#vault' },
+  { id: 'hellstar', label: 'Hellstar', to: '/men/clothes?line=hellstar#vault' },
+  { id: 'ee', label: 'EE', to: '/men/clothes?line=ee#vault' },
+  { id: 'bape', label: 'Bape', to: '/men/clothes?line=bape#vault' },
+  { id: 'alocs', label: 'ALOCS', to: '/men/clothes?line=alocs#vault' },
   {
-    id: 'essentials' as const,
+    id: 'chrome-hearts',
+    label: 'Chrome Hearts',
+    to: '/men/clothes?line=chrome-hearts#vault',
+  },
+  {
+    id: 'denim-tears',
+    label: 'Denim Tears',
+    to: '/men/clothes?line=denim-tears#vault',
+  },
+  { id: 'gs', label: 'GS', to: '/men/clothes?line=gs#vault' },
+  {
+    id: 'essentials',
     label: 'Essentials',
-    to: '/men/clothes?line=essentials',
+    to: '/men/clothes?line=essentials#vault',
   },
 ]
 
+const lineIds = new Set(clothesLines.map((l) => l.id))
+
 export function parseClothesLine(value: string | null): ClothesLine {
-  if (value === 'hoodies' || value === 'pants' || value === 'essentials') {
-    return value
+  if (value && lineIds.has(value as ClothesLine)) {
+    return value as ClothesLine
   }
   return 'all'
 }
@@ -28,7 +44,7 @@ export default function ClothesLineTabs() {
     <div
       className="clothes-line-tabs"
       role="tablist"
-      aria-label="Clothes lines"
+      aria-label="Shop by brand"
     >
       {clothesLines.map((tab) => {
         const isActive = active === tab.id

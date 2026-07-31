@@ -1,11 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom'
 
 const tabs = [
-  { to: '/colognes', label: 'Colognes', match: '/colognes' },
-  { to: '/men/clothes', label: 'Men', match: '/men' },
-  { to: '/women/clothes', label: 'Women', match: '/women' },
-  { to: '/slides', label: 'Slides', match: '/slides' },
-  { to: '/airpods', label: 'AirPods', match: '/airpods' },
+  { to: '/colognes#vault', label: 'Colognes', match: '/colognes' },
+  { to: '/men/clothes#vault', label: 'Men', match: '/men' },
+  { to: '/women/clothes#vault', label: 'Women', match: '/women' },
+  { to: '/jerseys#vault', label: 'Jerseys', match: '/jerseys' },
+  { to: '/slides#vault', label: 'Slides', match: '/slides' },
+  { to: '/airpods#vault', label: 'AirPods', match: '/airpods' },
 ] as const
 
 export default function CategoryTabs() {

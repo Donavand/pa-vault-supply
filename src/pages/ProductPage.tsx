@@ -1,26 +1,38 @@
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import CheckoutButtons from '../components/CheckoutButtons'
 import NotifyRestock from '../components/NotifyRestock'
-import { paymentMethods } from '../data/payments'
 import {
   getProductBySlug,
   priceForQty,
   productImage,
   startingPrice,
+  unitPrice,
 } from '../data/products'
+import { useSheetProduct } from '../lib/inventory'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>()
-  const product = slug ? getProductBySlug(slug) : undefined
+  const base = slug ? getProductBySlug(slug) : undefined
+  const { product: sheetProduct } = useSheetProduct('colognes', slug ?? '')
 
   const [inCart, setInCart] = useState(false)
 
-  if (!product) {
+  if (!base) {
     return <Navigate to="/colognes" replace />
   }
 
-  const sold = product.quantity === 'sold'
+  const product =
+    sheetProduct?.quantity != null
+      ? { ...base, quantity: sheetProduct.quantity }
+      : base
+
+  const urgency = stockUrgency(product.quantity)
+  const label = stockUrgencyLabel(urgency)
+  const sold = urgency === 'sold'
   const estimate = priceForQty(product, 1)
+  const payPrice = unitPrice(product) ?? estimate.each ?? 0
 
   return (
     <main className="product-page">
@@ -33,16 +45,28 @@ export default function ProductPage() {
           <div className="product-page-shot">
             <img src={productImage(product)} alt={product.name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
+            {!sold && label && (
+              <span
+                className={`low-badge low-badge--lg${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+              >
+                {label}
+              </span>
+            )}
           </div>
 
           <div className="product-page-copy">
             <p className="product-page-brand">{product.brand}</p>
             <h1>{product.name}</h1>
             <p className="product-page-meta">
-              <span>#{product.id}</span>
-              {sold && <span>Sold out</span>}
               <span>{startingPrice(product)}</span>
             </p>
+
+            {urgency === 'act-fast' && (
+              <p className="urgency-banner">Act fast — almost gone.</p>
+            )}
+            {urgency === 'low' && (
+              <p className="urgency-banner">Low stock — limited pieces left.</p>
+            )}
 
             <p className="product-page-desc">{product.description}</p>
 
@@ -82,26 +106,15 @@ export default function ProductPage() {
 
                   <div className={`cart-checkout${inCart ? ' is-open' : ''}`}>
                     <h3>Checkout</h3>
-                    <p>Pay with any method below.</p>
-                    <ul className="pay-methods">
-                      {paymentMethods.map((method) => (
-                        <li key={method.id}>
-                          <a
-                            className={`pay-btn pay-btn--${method.id}`}
-                            href={method.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <span>{method.label}</span>
-                            <span className="pay-btn-note">
-                              {estimate.total != null
-                                ? `${method.note} · $${estimate.total.toLocaleString()}`
-                                : method.note}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+                    <p>
+                      Pay with any method below — stock updates in your sheet.
+                    </p>
+                    <CheckoutButtons
+                      catalog="colognes"
+                      slug={product.slug}
+                      name={product.name}
+                      unitPrice={payPrice}
+                    />
                   </div>
                 </aside>
               )}

@@ -15,9 +15,9 @@ function RedirectToMenClothes() {
   return <Navigate to={`/men/clothes/${slug}`} replace />
 }
 
-function RedirectToMenBags() {
+function RedirectWomenJersey() {
   const { slug } = useParams<{ slug: string }>()
-  return <Navigate to={`/men/bags/${slug}`} replace />
+  return <Navigate to={slug ? `/jerseys/${slug}` : '/jerseys'} replace />
 }
 
 export default function App() {
@@ -32,23 +32,8 @@ export default function App() {
           <Route path="/men" element={<Navigate to="/men/clothes" replace />} />
           <Route path="/men/clothes" element={<Clothes />} />
           <Route path="/men/clothes/:slug" element={<ClothingPage />} />
-          <Route
-            path="/men/bags"
-            element={
-              <GearShop
-                category="bags"
-                basePath="/men/bags"
-                title="Men · Bags"
-                showMenTabs
-              />
-            }
-          />
-          <Route
-            path="/men/bags/:slug"
-            element={
-              <GearProductPage category="bags" basePath="/men/bags" />
-            }
-          />
+          <Route path="/men/bags" element={<Navigate to="/men/clothes" replace />} />
+          <Route path="/men/bags/:slug" element={<Navigate to="/men/clothes" replace />} />
 
           <Route path="/women" element={<Navigate to="/women/clothes" replace />} />
           <Route
@@ -59,17 +44,38 @@ export default function App() {
             path="/women/clothes/:slug"
             element={<WomenProductPage section="clothes" />}
           />
-          <Route path="/women/bags" element={<WomenShop section="bags" />} />
+          <Route
+            path="/women/accessories"
+            element={<WomenShop section="accessories" />}
+          />
+          <Route
+            path="/women/accessories/:slug"
+            element={<WomenProductPage section="accessories" />}
+          />
+          <Route
+            path="/women/jerseys"
+            element={<Navigate to="/jerseys" replace />}
+          />
+          <Route path="/women/jerseys/:slug" element={<RedirectWomenJersey />} />
+          <Route
+            path="/women/bags"
+            element={<Navigate to="/women/accessories" replace />}
+          />
           <Route
             path="/women/bags/:slug"
-            element={<WomenProductPage section="bags" />}
+            element={<Navigate to="/women/accessories" replace />}
           />
 
           <Route path="/clothes" element={<Navigate to="/men/clothes" replace />} />
           <Route path="/clothes/:slug" element={<RedirectToMenClothes />} />
-          <Route path="/bags" element={<Navigate to="/men/bags" replace />} />
-          <Route path="/bags/:slug" element={<RedirectToMenBags />} />
+          <Route path="/bags" element={<Navigate to="/men/clothes" replace />} />
+          <Route path="/bags/:slug" element={<Navigate to="/men/clothes" replace />} />
 
+          <Route path="/jerseys" element={<GearShop category="jerseys" />} />
+          <Route
+            path="/jerseys/:slug"
+            element={<GearProductPage category="jerseys" />}
+          />
           <Route path="/slides" element={<GearShop category="slides" />} />
           <Route
             path="/slides/:slug"

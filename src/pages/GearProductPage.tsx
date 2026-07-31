@@ -6,8 +6,10 @@ import {
   type GearCategory,
   getGearBySlug,
   gearImage,
-  isGearLowStock,
+  gearQuantity,
+  gearSizeSold,
 } from '../data/gear'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 type Props = {
   category: GearCategory
@@ -24,10 +26,16 @@ export default function GearProductPage({ category, basePath }: Props) {
     return <Navigate to={basePath ?? `/${category}`} replace />
   }
 
-  const sold = item.quantity === 'sold'
-  const low = isGearLowStock(item)
-  const options = item.options ?? []
-  const selected = option ?? options[0] ?? null
+  const qty = gearQuantity(item)
+  const urgency = stockUrgency(qty)
+  const label = stockUrgencyLabel(urgency)
+  const sold = urgency === 'sold'
+  const sizeOptions = item.sizes?.map((entry) => entry.size) ?? item.options ?? []
+  const selected =
+    option ??
+    item.sizes?.find((entry) => typeof entry.quantity === 'number')?.size ??
+    sizeOptions[0] ??
+    null
   const path = basePath ?? `/${category}`
 
   return (
@@ -41,9 +49,11 @@ export default function GearProductPage({ category, basePath }: Props) {
           <div className="product-page-shot">
             <img src={gearImage(item)} alt={item.name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
-            {low && (
-              <span className="low-badge low-badge--lg">
-                Only {item.quantity} left
+            {!sold && label && (
+              <span
+                className={`low-badge low-badge--lg${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+              >
+                {label}
               </span>
             )}
           </div>
@@ -52,21 +62,14 @@ export default function GearProductPage({ category, basePath }: Props) {
             <p className="product-page-brand">{item.brand}</p>
             <h1>{item.name}</h1>
             <p className="product-page-meta">
-              <span>#{item.id}</span>
-              <span className={low ? 'meta-low' : undefined}>
-                {sold
-                  ? 'Sold out'
-                  : low
-                    ? `Only ${item.quantity} left`
-                    : `${item.quantity} in vault`}
-              </span>
-              <span>${item.price}</span>
+              <span>From ${item.price}</span>
             </p>
 
-            {low && (
-              <p className="urgency-banner">
-                Act fast — only {item.quantity} left in the vault.
-              </p>
+            {urgency === 'act-fast' && (
+              <p className="urgency-banner">Act fast — almost gone.</p>
+            )}
+            {urgency === 'low' && (
+              <p className="urgency-banner">Low stock — limited pieces left.</p>
             )}
 
             <p className="product-page-desc">{item.description}</p>
@@ -93,25 +96,29 @@ export default function GearProductPage({ category, basePath }: Props) {
                     </div>
                   </div>
 
-                  {options.length > 0 && (
+                  {sizeOptions.length > 0 && (
                     <div className="size-picker">
                       <p className="size-picker-label">
                         {item.optionLabel ?? 'Option'}
                       </p>
                       <div className="size-options">
-                        {options.map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            className={`size-option${selected === s ? ' is-active' : ''}`}
-                            onClick={() => {
-                              setOption(s)
-                              setInCart(false)
-                            }}
-                          >
-                            {s}
-                          </button>
-                        ))}
+                        {sizeOptions.map((size) => {
+                          const sizeSold = gearSizeSold(item, size)
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              className={`size-option${selected === size ? ' is-active' : ''}${sizeSold ? ' is-sold' : ''}`}
+                              disabled={sizeSold}
+                              onClick={() => {
+                                setOption(size)
+                                setInCart(false)
+                              }}
+                            >
+                              {size}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -119,6 +126,7 @@ export default function GearProductPage({ category, basePath }: Props) {
                   <button
                     type="button"
                     className={`cart-add${inCart ? ' cart-add--done' : ''}`}
+                    disabled={Boolean(selected && gearSizeSold(item, selected))}
                     onClick={() => setInCart(true)}
                   >
                     {inCart ? 'Added to cart' : 'Add to cart'}

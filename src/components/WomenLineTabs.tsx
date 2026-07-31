@@ -2,14 +2,18 @@ import { NavLink, useLocation } from 'react-router-dom'
 import type { WomenSection } from '../data/women'
 
 const tabs: { id: WomenSection; label: string; to: string }[] = [
-  { id: 'clothes', label: 'Clothes', to: '/women/clothes' },
-  { id: 'bags', label: 'Bags', to: '/women/bags' },
+  { id: 'clothes', label: 'Clothes', to: '/women/clothes#vault' },
+  {
+    id: 'accessories',
+    label: 'Accessories',
+    to: '/women/accessories#vault',
+  },
 ]
 
 export default function WomenLineTabs() {
   const { pathname } = useLocation()
-  const active: WomenSection = pathname.includes('/women/bags')
-    ? 'bags'
+  const active: WomenSection = pathname.includes('/women/accessories')
+    ? 'accessories'
     : 'clothes'
 
   return (

@@ -5,8 +5,10 @@ import {
   productImage,
   startingPrice,
   tiersFor,
-  isLowStock,
+  type Product,
 } from '../data/products'
+import { useInventory } from '../lib/inventory'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 const socials = [
   { label: 'Instagram', href: '#contact' },
@@ -14,9 +16,19 @@ const socials = [
   { label: 'Discord', href: '#contact' },
 ]
 
+function withSheetQty(
+  product: Product,
+  sheetQty: number | 'sold' | null | undefined,
+): Product {
+  if (sheetQty === undefined || sheetQty === null) return product
+  return { ...product, quantity: sheetQty }
+}
+
 export default function Colognes() {
-  const inStock = products.filter((p) => p.quantity !== 'sold')
-  const soldOut = products.filter((p) => p.quantity === 'sold')
+  const { getProduct } = useInventory()
+  const live = products.map((p) =>
+    withSheetQty(p, getProduct('colognes', p.slug)?.quantity),
+  )
 
   return (
     <main id="top">
@@ -34,31 +46,48 @@ export default function Colognes() {
         <CategoryTabs />
 
         <ul className="product-grid">
-          {inStock.map((product, i) => {
-            const low = isLowStock(product)
+          {live.map((product, i) => {
+            const urgency = stockUrgency(product.quantity)
+            const label = stockUrgencyLabel(urgency)
+            const sold = urgency === 'sold'
+            const low = urgency === 'low' || urgency === 'act-fast'
             return (
               <li key={product.id} style={{ animationDelay: `${0.04 * i}s` }}>
                 <Link
-                  className={`product${low ? ' product--low' : ''}`}
+                  className={`product${sold ? ' product--sold' : ''}${low ? ' product--low' : ''}`}
                   to={`/colognes/${product.slug}`}
                 >
                   <span className="product-shot">
                     <img src={productImage(product)} alt="" loading="lazy" />
-                    {low && (
-                      <span className="low-badge">
-                        Only {product.quantity} left
+                    {low && label && (
+                      <span
+                        className={`low-badge${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+                      >
+                        {label}
                       </span>
                     )}
                   </span>
                   <span className="product-body">
-                    <span className="product-meta">
-                      <span className="product-id">#{product.id}</span>
-                    </span>
+                    {label && (
+                      <span className="product-meta">
+                        <span
+                          className={`product-qty${
+                            sold
+                              ? ' product-qty--sold'
+                              : urgency === 'act-fast'
+                                ? ' product-qty--act'
+                                : ' product-qty--low'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      </span>
+                    )}
                     <span className="product-brand">{product.brand}</span>
                     <span className="product-name">{product.name}</span>
-                    {low && (
-                      <span className="product-urgency">
-                        Act fast — only {product.quantity} left
+                    {urgency === 'act-fast' && (
+                      <span className="product-urgency product-urgency--act">
+                        Act fast
                       </span>
                     )}
                     <span className="product-price">
@@ -70,46 +99,6 @@ export default function Colognes() {
             )
           })}
         </ul>
-
-        {soldOut.length > 0 && (
-          <div className="sold-block">
-            <div className="section-head sold-head">
-              <h2>Sold out</h2>
-              <p>
-                Same lineup — currently cleared. Open a page to get notified
-                when it’s back.
-              </p>
-            </div>
-            <ul className="product-grid">
-              {soldOut.map((product, i) => (
-                <li
-                  key={product.id}
-                  style={{ animationDelay: `${0.04 * i}s` }}
-                >
-                  <Link
-                    className="product product--sold"
-                    to={`/colognes/${product.slug}`}
-                  >
-                    <span className="product-shot">
-                      <img src={productImage(product)} alt="" loading="lazy" />
-                      <span className="sold-badge">Sold out</span>
-                    </span>
-                    <span className="product-body">
-                      <span className="product-meta">
-                        <span className="product-id">#{product.id}</span>
-                      </span>
-                      <span className="product-brand">{product.brand}</span>
-                      <span className="product-name">{product.name}</span>
-                      <span className="product-price">
-                        {startingPrice(product)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </section>
 
       <section className="pricing" id="pricing">

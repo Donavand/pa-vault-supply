@@ -1,0 +1,25 @@
+catalog,slug,name,brand,price,size,quantity,image,description,category,low_threshold
+women-clothes,black-alo-set,Black Alo Set,Alo,70,S,7,/products/alo-set-black.png,Matching Alo set in black.,sets,5
+women-clothes,black-alo-set,Black Alo Set,Alo,70,M,7,/products/alo-set-black.png,Matching Alo set in black.,sets,5
+women-clothes,black-alo-set,Black Alo Set,Alo,70,L,7,/products/alo-set-black.png,Matching Alo set in black.,sets,5
+women-clothes,black-alo-set,Black Alo Set,Alo,70,XL,2,/products/alo-set-black.png,Matching Alo set in black.,sets,5
+women-clothes,white-alo-set,White Alo Set,Alo,70,S,9,/products/alo-set-white.png,Matching Alo set in white.,sets,5
+women-clothes,white-alo-set,White Alo Set,Alo,70,M,8,/products/alo-set-white.png,Matching Alo set in white.,sets,5
+women-clothes,white-alo-set,White Alo Set,Alo,70,L,8,/products/alo-set-white.png,Matching Alo set in white.,sets,5
+women-clothes,white-alo-set,White Alo Set,Alo,70,XL,2,/products/alo-set-white.png,Matching Alo set in white.,sets,5
+women-clothes,pink-alo-set,Pink Alo Set,Alo,70,S,6,/products/alo-set-pink.png,Matching Alo set in pink.,sets,5
+women-clothes,pink-alo-set,Pink Alo Set,Alo,70,M,10,/products/alo-set-pink.png,Matching Alo set in pink.,sets,5
+women-clothes,pink-alo-set,Pink Alo Set,Alo,70,L,10,/products/alo-set-pink.png,Matching Alo set in pink.,sets,5
+women-clothes,pink-alo-set,Pink Alo Set,Alo,70,XL,3,/products/alo-set-pink.png,Matching Alo set in pink.,sets,5
+women-clothes,blue-alo-set,Blue Alo Set,Alo,70,S,8,/products/alo-set-blue.png,Matching Alo set in blue.,sets,5
+women-clothes,blue-alo-set,Blue Alo Set,Alo,70,M,7,/products/alo-set-blue.png,Matching Alo set in blue.,sets,5
+women-clothes,blue-alo-set,Blue Alo Set,Alo,70,L,SOLD,/products/alo-set-blue.png,Matching Alo set in blue.,sets,5
+women-clothes,blue-alo-set,Blue Alo Set,Alo,70,XL,2,/products/alo-set-blue.png,Matching Alo set in blue.,sets,5
+women-clothes,grey-alo-set,Grey Alo Set,Alo,70,S,6,/products/alo-set-grey.png,Matching Alo set in grey.,sets,5
+women-clothes,grey-alo-set,Grey Alo Set,Alo,70,M,7,/products/alo-set-grey.png,Matching Alo set in grey.,sets,5
+women-clothes,grey-alo-set,Grey Alo Set,Alo,70,L,7,/products/alo-set-grey.png,Matching Alo set in grey.,sets,5
+women-clothes,grey-alo-set,Grey Alo Set,Alo,70,XL,2,/products/alo-set-grey.png,Matching Alo set in grey.,sets,5
+women-clothes,navy-alo-set,Navy Alo Set,Alo,70,S,3,/products/alo-set-navy.png,Matching Alo set in navy.,sets,5
+women-clothes,navy-alo-set,Navy Alo Set,Alo,70,M,7,/products/alo-set-navy.png,Matching Alo set in navy.,sets,5
+women-clothes,navy-alo-set,Navy Alo Set,Alo,70,L,3,/products/alo-set-navy.png,Matching Alo set in navy.,sets,5
+women-clothes,navy-alo-set,Navy Alo Set,Alo,70,XL,SOLD,/products/alo-set-navy.png,Matching Alo set in navy.,sets,5

@@ -1,40 +1,68 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import CheckoutButtons from '../components/CheckoutButtons'
 import NotifyRestock from '../components/NotifyRestock'
-import { paymentMethods } from '../data/payments'
 import {
   clothingImage,
-  clothingQuantity,
   clothesLineForItem,
   clothesLinePath,
   firstAvailableSize,
   getClothingBySlug,
-  isClothingLowStock,
-  isClothingSoldOut,
-  sizeQuantity,
   unitClothingPrice,
 } from '../data/clothes'
+import { useSheetProduct } from '../lib/inventory'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 export default function ClothingPage() {
   const { slug } = useParams<{ slug: string }>()
   const item = slug ? getClothingBySlug(slug) : undefined
+  const { product: sheetProduct } = useSheetProduct('men-clothes', slug ?? '')
   const [inCart, setInCart] = useState(false)
   const [size, setSize] = useState<string | null>(null)
+
+  const mergedSizes = useMemo(() => {
+    if (!item) return []
+    if (sheetProduct?.sizes.length) {
+      return sheetProduct.sizes.map((entry) => ({
+        size: entry.size,
+        quantity: entry.quantity,
+      }))
+    }
+    return item.sizes
+  }, [item, sheetProduct])
 
   if (!item) {
     return <Navigate to="/men/clothes" replace />
   }
 
-  const sold = isClothingSoldOut(item)
-  const selectedSize = size ?? firstAvailableSize(item)
-  const selectedQty = selectedSize ? sizeQuantity(item, selectedSize) : null
-  const sizeLow =
-    typeof selectedQty === 'number' && selectedQty > 0 && selectedQty < 5
-  const totalQty = clothingQuantity(item)
-  const low = isClothingLowStock(item)
-  const unitPrice = unitClothingPrice(item)
+  const selectedSize =
+    size ??
+    mergedSizes.find((entry) => typeof entry.quantity === 'number')?.size ??
+    firstAvailableSize(item)
+  const selectedQty = selectedSize
+    ? (mergedSizes.find((entry) => entry.size === selectedSize)?.quantity ??
+      null)
+    : null
+  const totalNums = mergedSizes
+    .map((s) => s.quantity)
+    .filter((q): q is number => typeof q === 'number')
+  const totalQty = totalNums.length
+    ? totalNums.reduce((a, b) => a + b, 0)
+    : ('sold' as const)
+  const sold = mergedSizes.every((entry) => entry.quantity === 'sold')
+  const urgency = stockUrgency(
+    typeof selectedQty === 'number' || selectedQty === 'sold'
+      ? selectedQty
+      : totalQty,
+  )
+  const label = stockUrgencyLabel(urgency)
+  const unitPrice = sheetProduct?.price || unitClothingPrice(item)
   const line = clothesLineForItem(item)
   const backPath = `${clothesLinePath(line)}#vault`
+  const name = sheetProduct?.name || item.name
+  const brand = sheetProduct?.brand || item.brand
+  const image = sheetProduct?.image || clothingImage(item)
+  const description = sheetProduct?.description || item.description
 
   return (
     <main className="product-page">
@@ -45,50 +73,58 @@ export default function ClothingPage() {
 
         <div className="product-page-grid">
           <div className="product-page-shot">
-            <img src={clothingImage(item)} alt={item.name} />
+            <img src={image} alt={name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
-            {!sold && low && typeof totalQty === 'number' && (
-              <span className="low-badge low-badge--lg">
-                Only {totalQty} left
+            {!sold && label && (
+              <span
+                className={`low-badge low-badge--lg${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+              >
+                {label}
               </span>
             )}
           </div>
 
           <div className="product-page-copy">
-            <p className="product-page-brand">{item.brand}</p>
-            <h1>{item.name}</h1>
+            <p className="product-page-brand">{brand}</p>
+            <h1>{name}</h1>
             <p className="product-page-meta">
-              <span>#{item.id}</span>
               <span className="product-page-category">{item.category}</span>
               <span>${unitPrice}</span>
             </p>
 
-            {sizeLow && selectedSize && (
+            {urgency === 'act-fast' && (
               <p className="urgency-banner">
-                Act fast — only {selectedQty} left in size {selectedSize}.
+                Act fast
+                {selectedSize ? ` — size ${selectedSize} almost gone.` : ' — almost gone.'}
+              </p>
+            )}
+            {urgency === 'low' && (
+              <p className="urgency-banner">
+                Low stock
+                {selectedSize ? ` — size ${selectedSize} is limited.` : ' — limited pieces left.'}
               </p>
             )}
 
-            <p className="product-page-desc">{item.description}</p>
+            <p className="product-page-desc">{description}</p>
 
             <div className="buy-row">
               {sold ? (
                 <NotifyRestock
                   kind="clothes"
                   slug={item.slug}
-                  name={item.name}
-                  brand={item.brand}
+                  name={name}
+                  brand={brand}
                   path={`/men/clothes/${item.slug}`}
-                  image={clothingImage(item)}
+                  image={image}
                 />
               ) : (
                 <aside className="cart-panel cart-panel--compact">
                   <h2>Add to cart</h2>
                   <div className="cart-item">
-                    <img src={clothingImage(item)} alt="" />
+                    <img src={image} alt="" />
                     <div>
-                      <p className="cart-item-name">{item.name}</p>
-                      <p className="cart-item-brand">{item.brand}</p>
+                      <p className="cart-item-name">{name}</p>
+                      <p className="cart-item-brand">{brand}</p>
                       <p className="cart-item-price">${unitPrice}</p>
                     </div>
                   </div>
@@ -96,7 +132,7 @@ export default function ClothingPage() {
                   <div className="size-picker">
                     <p className="size-picker-label">Size</p>
                     <div className="size-options">
-                      {item.sizes.map((entry) => {
+                      {mergedSizes.map((entry) => {
                         const sizeSold = entry.quantity === 'sold'
                         const active = selectedSize === entry.size
                         return (
@@ -129,25 +165,17 @@ export default function ClothingPage() {
                   <div className={`cart-checkout${inCart ? ' is-open' : ''}`}>
                     <h3>Checkout</h3>
                     <p>
-                      Size {selectedSize} · pay with any method below.
+                      Size {selectedSize} · pay with any method below — stock
+                      updates in your sheet.
                     </p>
-                    <ul className="pay-methods">
-                      {paymentMethods.map((method) => (
-                        <li key={method.id}>
-                          <a
-                            className={`pay-btn pay-btn--${method.id}`}
-                            href={method.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <span>{method.label}</span>
-                            <span className="pay-btn-note">
-                              {method.note} · ${unitPrice}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+                    <CheckoutButtons
+                      catalog="men-clothes"
+                      slug={item.slug}
+                      name={name}
+                      size={selectedSize}
+                      unitPrice={unitPrice}
+                      disabled={!selectedSize}
+                    />
                   </div>
                 </aside>
               )}

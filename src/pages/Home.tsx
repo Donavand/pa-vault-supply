@@ -3,33 +3,39 @@ import CategoryTabs from '../components/CategoryTabs'
 
 const categories = [
   {
-    to: '/colognes',
+    to: '/colognes#vault',
     label: 'Colognes',
     copy: 'Premium fragrance stock from the vault.',
     image: '/products/baccarat.png',
   },
   {
-    to: '/men/clothes',
+    to: '/men/clothes#vault',
     label: 'Men',
-    copy: 'Men’s clothes and bags from the vault.',
+    copy: 'Men’s clothes from the vault.',
     image: '/products/stretch-limo-hoodie.png',
   },
   {
-    to: '/women/clothes',
+    to: '/women/clothes#vault',
     label: 'Women',
-    copy: 'Women’s clothes and bags from the vault.',
-    image: '/products/women-cropped-hoodie.png',
+    copy: 'Alo, Lulu, and Coach from the vault.',
+    image: '/products/alo-set-black.png',
   },
   {
-    to: '/slides',
+    to: '/jerseys#vault',
+    label: 'Jerseys',
+    copy: 'Game-day kits from the vault — from $45.',
+    image: '/products/jersey-argentina-messi.png',
+  },
+  {
+    to: '/slides#vault',
     label: 'Slides',
-    copy: 'Comfort slides in black, bone, and gold.',
-    image: '/products/slides-black.png',
+    copy: 'Yeezy and Balenciaga slides from the vault.',
+    image: '/products/yeezy-slides-onyx.png',
   },
   {
-    to: '/airpods',
+    to: '/airpods#vault',
     label: 'AirPods',
-    copy: 'Apple AirPods Pro, Max, and more.',
+    copy: 'AirPods Pro and Gen 4 — from $35.',
     image: '/products/airpods-pro.png',
   },
 ] as const
@@ -61,7 +67,7 @@ export default function Home() {
           </p>
           <h1>Unlock the vault.</h1>
           <p className="lede">
-            Colognes, clothes, bags, slides, and AirPods — shop the supply and
+            Colognes, clothes, slides, and AirPods — shop the supply and
             checkout your way.
           </p>
           <div className="cta-row">

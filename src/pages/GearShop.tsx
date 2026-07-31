@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import CategoryTabs from '../components/CategoryTabs'
-import MenLineTabs from '../components/MenLineTabs'
 import {
   type GearCategory,
   gearByCategory,
   gearImage,
   gearMeta,
-  isGearLowStock,
+  gearQuantity,
 } from '../data/gear'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 const socials = [
   { label: 'Instagram', href: '#contact' },
@@ -19,19 +19,15 @@ type Props = {
   category: GearCategory
   basePath?: string
   title?: string
-  showMenTabs?: boolean
 }
 
 export default function GearShop({
   category,
   basePath,
   title,
-  showMenTabs = false,
 }: Props) {
   const meta = gearMeta[category]
   const items = gearByCategory(category)
-  const inStock = items.filter((c) => c.quantity !== 'sold')
-  const soldOut = items.filter((c) => c.quantity === 'sold')
   const path = basePath ?? `/${category}`
 
   return (
@@ -48,34 +44,50 @@ export default function GearShop({
 
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
-        {showMenTabs && <MenLineTabs />}
 
         <ul className="product-grid">
-          {inStock.map((item, i) => {
-            const low = isGearLowStock(item)
+          {items.map((item, i) => {
+            const urgency = stockUrgency(gearQuantity(item))
+            const label = stockUrgencyLabel(urgency)
+            const sold = urgency === 'sold'
+            const low = urgency === 'low' || urgency === 'act-fast'
             return (
               <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
                 <Link
-                  className={`product${low ? ' product--low' : ''}`}
+                  className={`product${sold ? ' product--sold' : ''}${low ? ' product--low' : ''}`}
                   to={`${path}/${item.slug}`}
                 >
                   <span className="product-shot">
                     <img src={gearImage(item)} alt="" loading="lazy" />
-                    {low && (
-                      <span className="low-badge">
-                        Only {item.quantity} left
+                    {low && label && (
+                      <span
+                        className={`low-badge${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+                      >
+                        {label}
                       </span>
                     )}
                   </span>
                   <span className="product-body">
-                    <span className="product-meta">
-                      <span className="product-id">#{item.id}</span>
-                    </span>
+                    {label && (
+                      <span className="product-meta">
+                        <span
+                          className={`product-qty${
+                            sold
+                              ? ' product-qty--sold'
+                              : urgency === 'act-fast'
+                                ? ' product-qty--act'
+                                : ' product-qty--low'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      </span>
+                    )}
                     <span className="product-brand">{item.brand}</span>
                     <span className="product-name">{item.name}</span>
-                    {low && (
-                      <span className="product-urgency">
-                        Act fast — only {item.quantity} left
+                    {urgency === 'act-fast' && (
+                      <span className="product-urgency product-urgency--act">
+                        Act fast
                       </span>
                     )}
                     <span className="product-price">${item.price}</span>
@@ -85,38 +97,6 @@ export default function GearShop({
             )
           })}
         </ul>
-
-        {soldOut.length > 0 && (
-          <div className="sold-block">
-            <div className="section-head sold-head">
-              <h2>Sold out</h2>
-              <p>Cleared pieces — open a page to get notified when it’s back.</p>
-            </div>
-            <ul className="product-grid">
-              {soldOut.map((item, i) => (
-                <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                  <Link
-                    className="product product--sold"
-                    to={`${path}/${item.slug}`}
-                  >
-                    <span className="product-shot">
-                      <img src={gearImage(item)} alt="" loading="lazy" />
-                      <span className="sold-badge">Sold out</span>
-                    </span>
-                    <span className="product-body">
-                      <span className="product-meta">
-                        <span className="product-id">#{item.id}</span>
-                      </span>
-                      <span className="product-brand">{item.brand}</span>
-                      <span className="product-name">{item.name}</span>
-                      <span className="product-price">${item.price}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </section>
 
       <section className="contact" id="contact">

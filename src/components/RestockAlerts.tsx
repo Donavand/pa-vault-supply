@@ -20,7 +20,7 @@ export default function RestockAlerts() {
       for (const item of restocked.slice(0, 3)) {
         try {
           new Notification(`${item.name} is back`, {
-            body: `${item.brand} · ${item.quantity} in the vault`,
+            body: `${item.brand} · back in the vault`,
             icon: item.image || '/logo-mark.png',
           })
         } catch {
@@ -43,9 +43,7 @@ export default function RestockAlerts() {
                 <img src={item.image} alt="" />
                 <span>
                   <strong>{item.name}</strong>
-                  <em>
-                    {item.brand} · {item.quantity} left
-                  </em>
+                  <em>{item.brand} · available again</em>
                 </span>
               </Link>
             </li>

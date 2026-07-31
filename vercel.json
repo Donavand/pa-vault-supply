@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/men/(.*)", "destination": "/index.html" },
+    { "source": "/women/(.*)", "destination": "/index.html" },
+    { "source": "/colognes/(.*)", "destination": "/index.html" },
+    { "source": "/slides/(.*)", "destination": "/index.html" },
+    { "source": "/airpods/(.*)", "destination": "/index.html" },
+    { "source": "/clothes/(.*)", "destination": "/index.html" },
+    { "source": "/bags/(.*)", "destination": "/index.html" },
+    { "source": "/product/(.*)", "destination": "/index.html" }
   ]
 }

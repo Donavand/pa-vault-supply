@@ -1,4 +1,6 @@
-export type WomenSection = 'clothes' | 'bags'
+export type WomenSection = 'clothes' | 'accessories'
+
+export type WomenBrand = 'all' | 'alo' | 'lulu' | 'coach'
 
 export type WomenSizeStock = {
   size: string
@@ -47,6 +49,23 @@ const aloSetTiers: WomenTier[] = [
   { qty: 50, total: 2250, each: 45 },
   { qty: 100, total: 4200, each: 42 },
 ]
+
+const coachTiers: WomenTier[] = [
+  { qty: 1, total: 55, each: 55 },
+  { qty: 2, total: 102, each: 51 },
+  { qty: 3, total: 150, each: 50 },
+  { qty: 4, total: 196, each: 49 },
+  { qty: 5, total: 240, each: 48 },
+  { qty: 6, total: 282, each: 47 },
+  { qty: 7, total: 322, each: 46 },
+  { qty: 8, total: 360, each: 45 },
+  { qty: 9, total: 396, each: 44 },
+  { qty: 10, total: 430, each: 43 },
+  { qty: 15, total: 630, each: 42 },
+  { qty: 20, total: 820, each: 41 },
+  { qty: 50, total: 1900, each: 38 },
+]
+
 
 export const womenItems: WomenItem[] = [
   // Alo Sets
@@ -128,124 +147,232 @@ export const womenItems: WomenItem[] = [
     description:
       'Matching Alo set in navy. XL sold out — act fast on S, M, and L.',
   },
-  // Essentials
+
+  // Lulu Sets (sizes 2 / 4 / 6 / 8)
   {
-    id: 7,
+    id: 18,
     section: 'clothes',
-    slug: 'cropped-hoodie-black',
-    name: 'Cropped Hoodie Black',
-    brand: 'Essentials',
-    price: 55,
-    sizes: [s('XS', 8), s('S', 14), s('M', 11), s('L', 6), s('XL', 'sold')],
-    image: '/products/women-cropped-hoodie.png',
+    slug: 'black-lulu-set',
+    name: 'Black Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 6), s('4', 'sold'), s('6', 2), s('8', 'sold')],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-black.png',
     description:
-      'Cropped fleece hoodie with the Essentials mark. Soft hand-feel, fitted vault cut.',
+      'Matching Lulu set in black — soft stretch fabric, vault-ready fit. Top and bottom included.',
   },
   {
-    id: 8,
+    id: 19,
     section: 'clothes',
-    slug: 'soft-tee-light-oat',
-    name: 'Soft Tee Light Oat',
-    brand: 'Essentials',
-    price: 28,
-    sizes: [s('XS', 12), s('S', 20), s('M', 18), s('L', 9), s('XL', 4)],
-    image: '/products/women-soft-tee.png',
+    slug: 'light-pink-lulu-set',
+    name: 'Light Pink Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 4), s('4', 4), s('6', 7), s('8', 1)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-light-pink.png',
     description:
-      'Lightweight essentials tee in light oat. Clean fit for everyday drops.',
+      'Matching Lulu set in light pink. Soft stretch, full set — grab your size.',
   },
   {
-    id: 9,
+    id: 20,
     section: 'clothes',
-    slug: 'wide-leg-pants-dark-oat',
-    name: 'Wide Leg Pants Dark Oat',
-    brand: 'Essentials',
-    price: 58,
-    sizes: [s('XS', 5), s('S', 9), s('M', 7), s('L', 'sold'), s('XL', 3)],
-    image: '/products/women-wide-pants.png',
+    slug: 'red-lulu-set',
+    name: 'Red Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 7), s('4', 5), s('6', 4), s('8', 3)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-red.png',
     description:
-      'Wide-leg sweatpants in dark oat. Relaxed vault silhouette with soft fleece.',
+      'Matching Lulu set in bold red. Athletic silhouette for studio and street.',
   },
   {
-    id: 10,
+    id: 21,
     section: 'clothes',
-    slug: 'ribbed-tank-stretch-limo',
-    name: 'Ribbed Tank Stretch Limo',
-    brand: 'Essentials',
-    price: 32,
-    sizes: [s('XS', 10), s('S', 16), s('M', 12), s('L', 8), s('XL', 2)],
-    image: '/products/women-ribbed-tank.png',
+    slug: 'white-lulu-set',
+    name: 'White Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 7), s('4', 7), s('6', 7), s('8', 1)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-white.png',
     description:
-      'Ribbed stretch limo tank. Layer it or wear solo — clean Essentials finish.',
+      'Matching Lulu set in white. Clean athletic look — top and bottom included.',
   },
   {
-    id: 11,
+    id: 22,
     section: 'clothes',
-    slug: 'fleece-mini-skirt-coral',
-    name: 'Fleece Mini Skirt Coral',
-    brand: 'Essentials',
-    price: 42,
-    sizes: [s('XS', 'sold'), s('S', 4), s('M', 6), s('L', 3), s('XL', 'sold')],
-    image: '/products/women-mini-skirt.png',
+    slug: 'leopard-lulu-set',
+    name: 'Leopard Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 'sold'), s('4', 1), s('6', 4), s('8', 1)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-leopard.png',
     description:
-      'Soft fleece mini skirt in coral. Low stock — grab your size while it lasts.',
+      'Matching Lulu set in leopard print. Statement vault piece with soft stretch.',
   },
-  // Bags
+  {
+    id: 23,
+    section: 'clothes',
+    slug: 'taupe-lulu-set',
+    name: 'Taupe Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 8), s('4', 9), s('6', 9), s('8', 2)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-taupe.png',
+    description:
+      'Matching Lulu set in warm taupe. Everyday neutral that layers clean.',
+  },
+  {
+    id: 24,
+    section: 'clothes',
+    slug: 'light-blue-lulu-set',
+    name: 'Light Blue Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 7), s('4', 7), s('6', 9), s('8', 3)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-light-blue.png',
+    description:
+      'Matching Lulu set in light blue. Soft stretch, full set from the vault.',
+  },
+  {
+    id: 25,
+    section: 'clothes',
+    slug: 'burgundy-lulu-set',
+    name: 'Burgundy Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 7), s('4', 5), s('6', 8), s('8', 2)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-burgundy.png',
+    description:
+      'Matching Lulu set in deep burgundy. Rich tone with a fitted vault cut.',
+  },
+  {
+    id: 26,
+    section: 'clothes',
+    slug: 'bright-pink-lulu-set',
+    name: 'Bright Pink Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 8), s('4', 9), s('6', 9), s('8', 2)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-bright-pink.png',
+    description:
+      'Matching Lulu set in bright pink. Bold colorway, soft stretch fabric.',
+  },
+  {
+    id: 27,
+    section: 'clothes',
+    slug: 'purple-lulu-set',
+    name: 'Purple Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 7), s('4', 7), s('6', 9), s('8', 3)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-purple.png',
+    description:
+      'Matching Lulu set in purple. Soft stretch, full set — grab your size.',
+  },
+  {
+    id: 28,
+    section: 'clothes',
+    slug: 'sky-blue-lulu-set',
+    name: 'Sky Blue Lulu Set',
+    brand: 'Lululemon',
+    price: 70,
+    sizes: [s('2', 8), s('4', 8), s('6', 9), s('8', 3)],
+    tiers: aloSetTiers,
+    image: '/products/lulu-set-sky-blue.png',
+    description:
+      'Matching Lulu set in sky blue. Clean athletic silhouette from the vault.',
+  },
+
+  // Accessories — Coach (from sheet)
   {
     id: 12,
-    section: 'bags',
-    slug: 'champagne-mini-crossbody',
-    name: 'Champagne Mini Crossbody',
-    brand: 'PA Vault Supply',
-    price: 75,
-    quantity: 9,
-    options: ['Champagne', 'Black'],
-    optionLabel: 'Color',
-    image: '/products/women-mini-crossbody.png',
+    section: 'accessories',
+    slug: 'coach-light-blue',
+    name: 'Coach Light Blue',
+    brand: 'Coach',
+    price: 55,
+    quantity: 'sold',
+    tiers: coachTiers,
+    image: '/products/coach-light-blue.png',
     description:
-      'Compact crossbody with gold-tone hardware. Fits phone, cards, and keys.',
+      'Small Coach mini bag in light blue pebbled leather with gold hardware. From $55.',
   },
   {
     id: 13,
-    section: 'bags',
-    slug: 'soft-tote-black',
-    name: 'Soft Tote Black',
-    brand: 'PA Vault Supply',
-    price: 95,
-    quantity: 7,
-    options: ['Black', 'Bone'],
-    optionLabel: 'Color',
-    image: '/products/women-soft-tote.png',
+    section: 'accessories',
+    slug: 'coach-dark-blue',
+    name: 'Coach Dark Blue',
+    brand: 'Coach',
+    price: 55,
+    quantity: 'sold',
+    tiers: coachTiers,
+    image: '/products/coach-dark-blue.png',
     description:
-      'Everyday soft tote with room for a laptop sleeve and night-drop essentials.',
+      'Small Coach mini bag in deep navy leather with gold hardware. From $55.',
   },
   {
     id: 14,
-    section: 'bags',
-    slug: 'plum-mini-shoulder',
-    name: 'Plum Mini Shoulder',
-    brand: 'PA Vault Supply',
-    price: 68,
-    quantity: 4,
-    options: ['Plum', 'Black'],
-    optionLabel: 'Color',
-    image: '/products/women-mini-shoulder.png',
+    section: 'accessories',
+    slug: 'coach-red',
+    name: 'Coach Red',
+    brand: 'Coach',
+    price: 55,
+    quantity: 'sold',
+    tiers: coachTiers,
+    image: '/products/coach-red.png',
     description:
-      'Structured mini shoulder in plum. Low stock — act fast.',
+      'Coach shoulder bag in bold red leather with gold hardware. From $55.',
   },
   {
     id: 15,
-    section: 'bags',
-    slug: 'bone-clutch',
-    name: 'Bone Clutch',
-    brand: 'PA Vault Supply',
+    section: 'accessories',
+    slug: 'coach-leopard',
+    name: 'Coach Leopard',
+    brand: 'Coach',
     price: 55,
     quantity: 'sold',
-    options: ['Bone', 'Black'],
-    optionLabel: 'Color',
-    image: '/products/women-clutch.png',
+    tiers: coachTiers,
+    image: '/products/coach-leopard.png',
     description:
-      'Evening clutch in bone with gold clasp. Sold out — join the restock list.',
+      'Coach shoulder bag in leopard print with gold hardware. From $55.',
   },
+  {
+    id: 16,
+    section: 'accessories',
+    slug: 'coach-black',
+    name: 'Coach Black',
+    brand: 'Coach',
+    price: 55,
+    quantity: 'sold',
+    tiers: coachTiers,
+    image: '/products/coach-black.png',
+    description:
+      'Small Coach mini bag in classic black leather with gold hardware. From $55.',
+  },
+  {
+    id: 17,
+    section: 'accessories',
+    slug: 'coach-c-black',
+    name: 'Coach C Black',
+    brand: 'Coach',
+    price: 55,
+    quantity: 2,
+    tiers: coachTiers,
+    image: '/products/coach-c-black.png',
+    description:
+      'Coach C signature canvas bag in black with leather trim. From $55 — only 2 left.',
+  },
+
 ]
 
 export const womenSectionMeta: Record<
@@ -254,16 +381,77 @@ export const womenSectionMeta: Record<
 > = {
   clothes: {
     title: 'Women · Clothes',
-    lede: 'Alo sets and Essentials pieces for her — size up and checkout.',
+    lede: 'Alo and Lulu sets from the vault — size up and checkout.',
   },
-  bags: {
-    title: 'Women · Bags',
-    lede: 'Crossbodies, totes, shoulders, and clutches from the vault.',
+  accessories: {
+    title: 'Women · Accessories',
+    lede: 'Coach bags from the vault — claim yours and checkout.',
   },
 }
 
 export function womenBySection(section: WomenSection): WomenItem[] {
   return womenItems.filter((item) => item.section === section)
+}
+
+const womenBrandMap: Record<string, Exclude<WomenBrand, 'all'>> = {
+  Alo: 'alo',
+  Lululemon: 'lulu',
+  Coach: 'coach',
+}
+
+export const womenBrandTabs: Record<
+  WomenSection,
+  { id: WomenBrand; label: string }[]
+> = {
+  clothes: [
+    { id: 'all', label: 'All' },
+    { id: 'alo', label: 'Alo' },
+    { id: 'lulu', label: 'Lulu' },
+  ],
+  accessories: [
+    { id: 'all', label: 'All' },
+    { id: 'coach', label: 'Coach' },
+  ],
+}
+
+export function parseWomenBrand(
+  section: WomenSection,
+  value: string | null,
+): WomenBrand {
+  const allowed = new Set(womenBrandTabs[section].map((t) => t.id))
+  if (value && allowed.has(value as WomenBrand)) {
+    return value as WomenBrand
+  }
+  return 'all'
+}
+
+export function womenForBrand(
+  section: WomenSection,
+  brand: WomenBrand,
+): WomenItem[] {
+  const items = womenBySection(section)
+  if (brand === 'all') return items
+  return items.filter((item) => womenBrandMap[item.brand] === brand)
+}
+
+export function womenGroupedByBrand(
+  items: WomenItem[],
+): { brand: string; items: WomenItem[] }[] {
+  const order = ['Alo', 'Lululemon', 'Coach']
+  const groups = new Map<string, WomenItem[]>()
+  for (const item of items) {
+    const list = groups.get(item.brand) ?? []
+    list.push(item)
+    groups.set(item.brand, list)
+  }
+  const sorted = [...groups.entries()].sort((a, b) => {
+    const ai = order.indexOf(a[0])
+    const bi = order.indexOf(b[0])
+    const av = ai === -1 ? 99 : ai
+    const bv = bi === -1 ? 99 : bi
+    return av - bv || a[0].localeCompare(b[0])
+  })
+  return sorted.map(([brand, brandItems]) => ({ brand, items: brandItems }))
 }
 
 export function getWomenBySlug(

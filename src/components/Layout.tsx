@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import RestockAlerts from './RestockAlerts'
+import ScrollToTop from './ScrollToTop'
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -10,8 +11,13 @@ export default function Layout() {
   const menActive = pathname.startsWith('/men')
   const womenActive = pathname.startsWith('/women')
 
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
   return (
     <div className="site is-ready">
+      <ScrollToTop />
       <div className="atmosphere" aria-hidden="true" />
       <RestockAlerts />
 
@@ -48,35 +54,42 @@ export default function Layout() {
             Home
           </NavLink>
           <NavLink
-            to="/colognes"
+            to="/colognes#vault"
             onClick={closeMenu}
             className={({ isActive }) => (isActive ? 'is-active' : undefined)}
           >
             Colognes
           </NavLink>
           <NavLink
-            to="/men/clothes"
+            to="/men/clothes#vault"
             onClick={closeMenu}
             className={menActive ? 'is-active' : undefined}
           >
             Men
           </NavLink>
           <NavLink
-            to="/women/clothes"
+            to="/women/clothes#vault"
             onClick={closeMenu}
             className={womenActive ? 'is-active' : undefined}
           >
             Women
           </NavLink>
           <NavLink
-            to="/slides"
+            to="/jerseys#vault"
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+          >
+            Jerseys
+          </NavLink>
+          <NavLink
+            to="/slides#vault"
             onClick={closeMenu}
             className={({ isActive }) => (isActive ? 'is-active' : undefined)}
           >
             Slides
           </NavLink>
           <NavLink
-            to="/airpods"
+            to="/airpods#vault"
             onClick={closeMenu}
             className={({ isActive }) => (isActive ? 'is-active' : undefined)}
           >

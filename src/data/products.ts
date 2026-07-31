@@ -184,6 +184,10 @@ export function isLowStock(product: Product): boolean {
   return typeof product.quantity === 'number' && product.quantity < 5
 }
 
+export function isActFast(product: Product): boolean {
+  return typeof product.quantity === 'number' && product.quantity < 2
+}
+
 export function maxOrderQty(product: Product): number {
   if (product.quantity === 'sold') return 20
   return Math.max(1, product.quantity)

@@ -1,47 +1,88 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import CheckoutButtons from '../components/CheckoutButtons'
 import NotifyRestock from '../components/NotifyRestock'
-import { paymentMethods } from '../data/payments'
 import {
   type WomenSection,
-  firstAvailableWomenSize,
   getWomenBySlug,
-  isWomenLowStock,
-  isWomenSoldOut,
   womenImage,
   womenQuantity,
-  womenSizeQuantity,
 } from '../data/women'
+import { useSheetProduct, type SheetQty } from '../lib/inventory'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 type Props = {
   section: WomenSection
 }
 
+function mergeQty(
+  local: number | 'sold' | null | undefined,
+  sheet: SheetQty | undefined,
+): number | 'sold' | null {
+  if (sheet !== undefined) return sheet
+  return local ?? null
+}
+
 export default function WomenProductPage({ section }: Props) {
   const { slug } = useParams<{ slug: string }>()
   const item = slug ? getWomenBySlug(section, slug) : undefined
+  const catalog =
+    section === 'accessories' ? 'women-accessories' : 'women-clothes'
+  const { product: sheetProduct } = useSheetProduct(catalog, slug ?? '')
   const [inCart, setInCart] = useState(false)
   const [choice, setChoice] = useState<string | null>(null)
 
-  if (!item) {
+  const mergedSizes = useMemo(() => {
+    if (!item?.sizes?.length && !sheetProduct?.sizes.length) return null
+    if (sheetProduct?.sizes.length) {
+      return sheetProduct.sizes.map((entry) => ({
+        size: entry.size,
+        quantity: entry.quantity,
+      }))
+    }
+    return item?.sizes ?? null
+  }, [item, sheetProduct])
+
+  if (!item && !sheetProduct) {
     return <Navigate to={`/women/${section}`} replace />
   }
 
-  const sold = isWomenSoldOut(item)
-  const hasSizes = Boolean(item.sizes?.length)
-  const options = item.options ?? []
+  const name = sheetProduct?.name || item?.name || slug || ''
+  const brand = sheetProduct?.brand || item?.brand || ''
+  const price = sheetProduct?.price || item?.price || 0
+  const description =
+    sheetProduct?.description || item?.description || ''
+  const image =
+    sheetProduct?.image ||
+    (item ? womenImage(item) : '/products/placeholder.png')
+
+  const hasSizes = Boolean(mergedSizes?.length)
+  const options = item?.options ?? []
   const selected = hasSizes
-    ? (choice ?? firstAvailableWomenSize(item))
+    ? (choice ??
+      mergedSizes?.find((s) => typeof s.quantity === 'number')?.size ??
+      null)
     : (choice ?? options[0] ?? null)
+
   const selectedQty = hasSizes && selected
-    ? womenSizeQuantity(item, selected)
-    : null
-  const sizeLow =
-    typeof selectedQty === 'number' && selectedQty > 0 && selectedQty < 5
-  const totalQty = womenQuantity(item)
-  const low = isWomenLowStock(item)
+    ? mergedSizes?.find((s) => s.size === selected)?.quantity ?? null
+    : mergeQty(
+        item ? womenQuantity(item) : null,
+        sheetProduct?.quantity ?? undefined,
+      )
+
+  const sold = hasSizes
+    ? Boolean(mergedSizes?.every((s) => s.quantity === 'sold'))
+    : selectedQty === 'sold' || selectedQty === 0
+
+  const urgency = stockUrgency(sold ? 'sold' : selectedQty)
+  const label = stockUrgencyLabel(urgency)
+
   const backPath = `/women/${section}#vault`
-  const waitlistKind = section === 'clothes' ? 'women-clothes' : 'women-bags'
+  const waitlistKind =
+    section === 'accessories'
+      ? ('women-accessories' as const)
+      : ('women-clothes' as const)
 
   return (
     <main className="product-page">
@@ -52,59 +93,71 @@ export default function WomenProductPage({ section }: Props) {
 
         <div className="product-page-grid">
           <div className="product-page-shot">
-            <img src={womenImage(item)} alt={item.name} />
+            <img src={image} alt={name} />
             {sold && <span className="sold-badge sold-badge--lg">Sold out</span>}
-            {!sold && low && typeof totalQty === 'number' && (
-              <span className="low-badge low-badge--lg">
-                Only {totalQty} left
+            {!sold && label && (
+              <span
+                className={`low-badge low-badge--lg${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+              >
+                {label}
               </span>
             )}
           </div>
 
           <div className="product-page-copy">
-            <p className="product-page-brand">{item.brand}</p>
-            <h1>{item.name}</h1>
+            <p className="product-page-brand">{brand}</p>
+            <h1>{name}</h1>
             <p className="product-page-meta">
-              <span>#{item.id}</span>
               <span className="product-page-category">{section}</span>
-              <span>${item.price}</span>
+              <span>${price}</span>
             </p>
 
-            {sizeLow && selected && (
+            {urgency === 'act-fast' && (
               <p className="urgency-banner">
-                Act fast — only {selectedQty} left in size {selected}.
+                Act fast
+                {hasSizes && selected
+                  ? ` — size ${selected} almost gone.`
+                  : ' — almost gone.'}
+              </p>
+            )}
+            {urgency === 'low' && (
+              <p className="urgency-banner">
+                Low stock
+                {hasSizes && selected
+                  ? ` — size ${selected} is limited.`
+                  : ' — limited pieces left.'}
               </p>
             )}
 
-            <p className="product-page-desc">{item.description}</p>
+            <p className="product-page-desc">{description}</p>
 
             <div className="buy-row">
               {sold ? (
                 <NotifyRestock
                   kind={waitlistKind}
-                  slug={item.slug}
-                  name={item.name}
-                  brand={item.brand}
-                  path={`/women/${section}/${item.slug}`}
-                  image={womenImage(item)}
+                  slug={slug ?? ''}
+                  name={name}
+                  brand={brand}
+                  path={`/women/${section}/${slug}`}
+                  image={image}
                 />
               ) : (
                 <aside className="cart-panel cart-panel--compact">
                   <h2>Add to cart</h2>
                   <div className="cart-item">
-                    <img src={womenImage(item)} alt="" />
+                    <img src={image} alt="" />
                     <div>
-                      <p className="cart-item-name">{item.name}</p>
-                      <p className="cart-item-brand">{item.brand}</p>
-                      <p className="cart-item-price">${item.price}</p>
+                      <p className="cart-item-name">{name}</p>
+                      <p className="cart-item-brand">{brand}</p>
+                      <p className="cart-item-price">${price}</p>
                     </div>
                   </div>
 
-                  {hasSizes && item.sizes && (
+                  {hasSizes && mergedSizes && (
                     <div className="size-picker">
                       <p className="size-picker-label">Size</p>
                       <div className="size-options">
-                        {item.sizes.map((entry) => {
+                        {mergedSizes.map((entry) => {
                           const sizeSold = entry.quantity === 'sold'
                           const active = selected === entry.size
                           return (
@@ -129,7 +182,7 @@ export default function WomenProductPage({ section }: Props) {
                   {!hasSizes && options.length > 0 && (
                     <div className="size-picker">
                       <p className="size-picker-label">
-                        {item.optionLabel ?? 'Option'}
+                        {item?.optionLabel ?? 'Option'}
                       </p>
                       <div className="size-options">
                         {options.map((opt) => (
@@ -162,27 +215,18 @@ export default function WomenProductPage({ section }: Props) {
                     <h3>Checkout</h3>
                     <p>
                       {selected
-                        ? `${hasSizes ? 'Size' : (item.optionLabel ?? 'Option')} ${selected} · `
+                        ? `${hasSizes ? 'Size' : (item?.optionLabel ?? 'Option')} ${selected} · `
                         : ''}
-                      pay with any method below.
+                      pay with any method below — stock updates in your sheet.
                     </p>
-                    <ul className="pay-methods">
-                      {paymentMethods.map((method) => (
-                        <li key={method.id}>
-                          <a
-                            className={`pay-btn pay-btn--${method.id}`}
-                            href={method.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <span>{method.label}</span>
-                            <span className="pay-btn-note">
-                              {method.note} · ${item.price}
-                            </span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+                    <CheckoutButtons
+                      catalog={catalog}
+                      slug={slug ?? ''}
+                      name={name}
+                      size={hasSizes ? selected : '-'}
+                      unitPrice={price}
+                      disabled={hasSizes && !selected}
+                    />
                   </div>
                 </aside>
               )}

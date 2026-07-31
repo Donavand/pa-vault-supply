@@ -3,15 +3,16 @@ import CategoryTabs from '../components/CategoryTabs'
 import ClothesLineTabs, {
   parseClothesLine,
 } from '../components/ClothesLineTabs'
-import MenLineTabs from '../components/MenLineTabs'
 import {
+  type ClothesLine,
+  type ClothingItem,
   clothingImage,
   clothingQuantity,
   clothesForLine,
-  isClothingLowStock,
-  isClothingSoldOut,
+  clothesGroupedByBrand,
   startingClothingPrice,
 } from '../data/clothes'
+import { stockUrgency, stockUrgencyLabel } from '../lib/stock'
 
 const socials = [
   { label: 'Instagram', href: '#contact' },
@@ -19,31 +20,104 @@ const socials = [
   { label: 'Discord', href: '#contact' },
 ]
 
-const lineCopy: Record<string, { title: string; blurb: string }> = {
+const lineCopy: Record<ClothesLine, { title: string; blurb: string }> = {
   all: {
     title: 'Men · Clothes',
-    blurb: 'Hoodies, pants, essentials shorts, and tees.',
+    blurb: 'Shop by brand — Hellstar, EE, Bape, ALOCS, and more.',
   },
-  hoodies: {
-    title: 'Men · Hoodies',
-    blurb: 'Stretch limo and oatmeal hoodies from the vault.',
+  hellstar: {
+    title: 'Men · Hellstar',
+    blurb: 'HS shorts and Hellstar tees from the vault.',
   },
-  pants: {
-    title: 'Men · Pants',
-    blurb: 'Uncuffed oat and stretch limo pants.',
+  ee: {
+    title: 'Men · EE',
+    blurb: 'EE shorts — bone, camo, skyline, and more.',
+  },
+  bape: {
+    title: 'Men · Bape',
+    blurb: 'Bape tees — logos, chrome, Miami, and sakura.',
+  },
+  alocs: {
+    title: 'Men · ALOCS',
+    blurb: 'ALOCS tees from the vault.',
+  },
+  'chrome-hearts': {
+    title: 'Men · Chrome Hearts',
+    blurb: 'Chrome Hearts tees from the vault.',
+  },
+  'denim-tears': {
+    title: 'Men · Denim Tears',
+    blurb: 'DT shorts from the vault.',
+  },
+  gs: {
+    title: 'Men · GS',
+    blurb: 'GS shorts from the vault.',
   },
   essentials: {
     title: 'Men · Essentials',
-    blurb: 'Essentials shorts and tees — core vault staples.',
+    blurb: 'Essentials hoodies and pants.',
   },
+}
+
+function ProductCard({ item, index }: { item: ClothingItem; index: number }) {
+  const urgency = stockUrgency(clothingQuantity(item))
+  const label = stockUrgencyLabel(urgency)
+  const sold = urgency === 'sold'
+  const low = urgency === 'low' || urgency === 'act-fast'
+
+  return (
+    <li style={{ animationDelay: `${0.04 * index}s` }}>
+      <Link
+        className={`product${sold ? ' product--sold' : ''}${low ? ' product--low' : ''}`}
+        to={`/men/clothes/${item.slug}`}
+      >
+        <span className="product-shot">
+          <img src={clothingImage(item)} alt="" loading="lazy" />
+          {low && label && (
+            <span
+              className={`low-badge${urgency === 'act-fast' ? ' low-badge--act' : ''}`}
+            >
+              {label}
+            </span>
+          )}
+        </span>
+        <span className="product-body">
+          <span className="product-meta">
+            {label ? (
+              <span
+                className={`product-qty${
+                  sold
+                    ? ' product-qty--sold'
+                    : urgency === 'act-fast'
+                      ? ' product-qty--act'
+                      : ' product-qty--low'
+                }`}
+              >
+                {label}
+              </span>
+            ) : (
+              <span className="product-category-tag">{item.category}</span>
+            )}
+          </span>
+          <span className="product-brand">{item.brand}</span>
+          <span className="product-name">{item.name}</span>
+          {urgency === 'act-fast' && (
+            <span className="product-urgency product-urgency--act">
+              Act fast
+            </span>
+          )}
+          <span className="product-price">{startingClothingPrice(item)}</span>
+        </span>
+      </Link>
+    </li>
+  )
 }
 
 export default function Clothes() {
   const [params] = useSearchParams()
   const line = parseClothesLine(params.get('line'))
   const filtered = clothesForLine(line)
-  const inStock = filtered.filter((c) => !isClothingSoldOut(c))
-  const soldOut = filtered.filter((c) => isClothingSoldOut(c))
+  const groups = line === 'all' ? clothesGroupedByBrand(filtered) : null
   const copy = lineCopy[line]
 
   return (
@@ -60,88 +134,27 @@ export default function Clothes() {
 
       <section className="vault vault--category" id="vault">
         <CategoryTabs />
-        <MenLineTabs />
         <ClothesLineTabs />
 
-        {inStock.length === 0 && soldOut.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="empty-line">No pieces in this line yet.</p>
+        ) : groups ? (
+          groups.map((group) => (
+            <div key={group.brand} className="brand-group">
+              <h2 className="brand-group-title">{group.brand}</h2>
+              <ul className="product-grid">
+                {group.items.map((item, i) => (
+                  <ProductCard key={item.id} item={item} index={i} />
+                ))}
+              </ul>
+            </div>
+          ))
         ) : (
           <ul className="product-grid">
-            {inStock.map((item, i) => {
-              const low = isClothingLowStock(item)
-              const qty = clothingQuantity(item)
-              return (
-                <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                  <Link
-                    className={`product${low ? ' product--low' : ''}`}
-                    to={`/men/clothes/${item.slug}`}
-                  >
-                    <span className="product-shot">
-                      <img src={clothingImage(item)} alt="" loading="lazy" />
-                      {low && typeof qty === 'number' && (
-                        <span className="low-badge">Only {qty} left</span>
-                      )}
-                    </span>
-                    <span className="product-body">
-                      <span className="product-meta">
-                        <span className="product-id">#{item.id}</span>
-                        <span className="product-category-tag">
-                          {item.category}
-                        </span>
-                      </span>
-                      <span className="product-brand">{item.brand}</span>
-                      <span className="product-name">{item.name}</span>
-                      {low && typeof qty === 'number' && (
-                        <span className="product-urgency">
-                          Act fast — only {qty} left
-                        </span>
-                      )}
-                      <span className="product-price">
-                        {startingClothingPrice(item)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
+            {filtered.map((item, i) => (
+              <ProductCard key={item.id} item={item} index={i} />
+            ))}
           </ul>
-        )}
-
-        {soldOut.length > 0 && (
-          <div className="sold-block">
-            <div className="section-head sold-head">
-              <h2>Sold out</h2>
-              <p>Cleared pieces — open a page to get notified when it’s back.</p>
-            </div>
-            <ul className="product-grid">
-              {soldOut.map((item, i) => (
-                <li key={item.id} style={{ animationDelay: `${0.04 * i}s` }}>
-                  <Link
-                    className="product product--sold"
-                    to={`/men/clothes/${item.slug}`}
-                  >
-                    <span className="product-shot">
-                      <img src={clothingImage(item)} alt="" loading="lazy" />
-                      <span className="sold-badge">Sold out</span>
-                    </span>
-                    <span className="product-body">
-                      <span className="product-meta">
-                        <span className="product-id">#{item.id}</span>
-                        <span className="product-category-tag">
-                          {item.category}
-                        </span>
-                      </span>
-                      <span className="product-brand">{item.brand}</span>
-                      <span className="product-name">{item.name}</span>
-                      <span className="product-price">
-                        {startingClothingPrice(item)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
         )}
       </section>
 
